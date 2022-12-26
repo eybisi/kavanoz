@@ -22,6 +22,12 @@ pip install -e . --user
 
 ### Usage
 
+from cmdline
+```bash
+kavanoz /tmp/filepath
+```
+
+from python library
 ```py
 from kavanoz.core import Kavanoz
 k = Kavanoz(apk_path)
