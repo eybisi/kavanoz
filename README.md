@@ -1,4 +1,4 @@
-# kavanoz
+# 🫙 kavanoz 🫙
 Statically unpacking common android banker malware.
 
 Ever wanted to get payload from packed malware without running android emulator ? Me neither.
@@ -14,13 +14,13 @@ Ever wanted to get payload from packed malware without running android emulator 
 - pycryptodome
 
 
-### Installation
+### :eyes: Installation
 
 ```
 pip install -e . --user
 ```
 
-### Usage
+### :zap: Usage
 
 from cmdline
 ```bash
@@ -37,7 +37,7 @@ for plugin_result in k.get_plugin_results():
         print(plugin_result)
 ```
 
-#### Scripts:
+### :snake: Scripts:
 
 - [rc4.py](loader/rc4.py) Generic rc4 encrypted asset file. Script covers multiple versions.
 - [old_rc4.py](loader/old_rc4.py) Another Generic rc4 encrypted asset file.
@@ -56,7 +56,7 @@ for plugin_result in k.get_plugin_results():
 
 Do not use cryptodome for rc4 decryption. It does not work with 2-4 key size.
 
-### Development
+### :gear: Development
 
 To add new plugins just create new file in loader folder. Extend Unpacker class from unpack_plugin.py file. Define start_decrypt function with your implementation. 
 ```py
@@ -75,7 +75,7 @@ You can use helper functions from unpacker class:
 - find_method(class_name,method_name,descriptor="")
 - check_and_write_file(file_data) : checks file has dex, zip and zlib headers and writes unpacked dex with name : "external-{m[:8]}.dex"
 
-### Tips
+### :book: Tips
 
 - self.dvms hold dex dvm objects. You can get class with `dvm.get_class(smali_annotation_of_class)`. Use jadx smali represantation to get class string to search 
 - You can get method object from class obj with `c.get_methods()`. This function is generator so you cant get target function in O(1). 
