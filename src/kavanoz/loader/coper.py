@@ -78,7 +78,7 @@ class LoaderCoper(Unpacker):
         for module in self.emulator.modules:
             if module.filename == self.target_lib:
                 self.logger.info("[0x%x] %s" % (module.base, module.filename))
-                # emulator.uc.hook_add(
+                # emulator.mu.hook_add(
                 # UC_HOOK_CODE,
                 # hook_code,
                 # begin=module.base + java_func_obj.address,
@@ -88,14 +88,14 @@ class LoaderCoper(Unpacker):
                 if strncat == None:
                     return False
                 self.logger.debug(f"{hex(strncat.address)} strcat_chk addr")
-                self.emulator.uc.hook_add(
+                self.emulator.mu.hook_add(
                     UC_HOOK_CODE,
                     self.hook_strncat,
                     begin=strncat.address,
                     end=strncat.address + 1,
                 )
-                self.emulator.uc.hook_add(UC_HOOK_MEM_UNMAPPED, self.hook_mem_read)
-                self.emulator.uc.hook_add(UC_HOOK_MEM_READ_UNMAPPED, self.hook_mem_read)
+                self.emulator.mu.hook_add(UC_HOOK_MEM_UNMAPPED, self.hook_mem_read)
+                self.emulator.mu.hook_add(UC_HOOK_MEM_READ_UNMAPPED, self.hook_mem_read)
                 return True
 
     def hook_mem_read(self, uc, access, address, size, value, user_data):
@@ -120,7 +120,7 @@ class LoaderCoper(Unpacker):
             self.logger.debug(f"current strncat hook final_str : {final_str}")
             self.resolved_strings.append(final_str)
             if len(self.resolved_strings) > 10:
-                self.emulator.uc.emu_stop()
+                self.emulator.mu.emu_stop()
 
     # def hook_code(self,uc: unicorn.unicorn.Uc, address, size, user_data):
     # global rc4_key
