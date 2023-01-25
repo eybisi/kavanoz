@@ -3,6 +3,7 @@ Statically unpacking common android banker malware.
 
 Ever wanted to get payload from packed malware without running android emulator ? Me neither.
 
+![](assets/unpack.gif)
 
 ### Requirements
 
