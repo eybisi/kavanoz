@@ -26,3 +26,5 @@ kavanoz = "kavanoz.core:cli"
 where = ["src"]  # ["."] by default
 include = ["*"]  # ["*"] by default
 namespaces = true  # true by default
+[tool.setuptools.package-data]
+kavanoz = ["loader/androidnativeemu/libc.so"]

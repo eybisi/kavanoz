@@ -116,7 +116,7 @@ class Unpacker:
 
     def find_method(
         self, klass_name: str, method_name: str, descriptor: str = ""
-    ) -> EncodedMethod | None:
+    ) -> EncodedMethod:
         """
         Find method in dvms via class name and method name. Descriptor is optional
         :returns EncodedMethod of found method
@@ -136,7 +136,7 @@ class Unpacker:
 
     def find_method_re(
         self, klass_name: str, method_name: str, descriptor: str = ""
-    ) -> EncodedMethod | None:
+    ) -> EncodedMethod:
         for dvm in self.dvms:
             c = dvm.get_class(klass_name)
             if c != None:
@@ -150,7 +150,7 @@ class Unpacker:
                                 return method
         return None
 
-    def find_class_in_dvms(self, klass_name: str) -> ClassDefItem | None:
+    def find_class_in_dvms(self, klass_name: str) -> ClassDefItem:
         """Search class name in dvms and return first instance"""
         for dvm in self.dvms:
             c = dvm.get_class(klass_name)
@@ -261,7 +261,7 @@ class Unpacker:
         """
         return self.decrypted_payload_path != None
 
-    def get_path(self) -> str | None:
+    def get_path(self) -> str:
         """
         Get decrypted_payload_path
         """
