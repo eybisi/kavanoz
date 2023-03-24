@@ -41,7 +41,7 @@ class LoaderRc4(Unpacker):
 
     def bruteforce_all_strings(self):
         if not self.is_really_unpacked():
-            all_possible_rc4_keys = self.find_all_strings(self.dvms[-1])
+            all_possible_rc4_keys = filter(lambda x: x != None,self.find_all_strings(self.dvms[-1]))
             if self.decrypt_files(all_possible_rc4_keys):
                 return self.bruteforce_all_strings()
             else:
@@ -211,16 +211,17 @@ class LoaderRc4(Unpacker):
         for filepath in self.apk_object.get_files():
             fd = self.apk_object.get_file(filepath)
             for rc4k in rc4key:
-                dede = ARC4(rc4k)
-                dec = dede.decrypt(fd[:8])
-                if self.check_header(dec):
+                if len(rc4k) > 0:
                     dede = ARC4(rc4k)
-                    dec = dede.decrypt(fd)
-                    if self.check_and_write_file(dec):
-                        self.logger.info(
-                            f"Decrypted dex is from {filepath} with key {rc4k}"
-                        )
-                        return True
+                    dec = dede.decrypt(fd[:8])
+                    if self.check_header(dec):
+                        dede = ARC4(rc4k)
+                        dec = dede.decrypt(fd)
+                        if self.check_and_write_file(dec):
+                            self.logger.info(
+                                f"Decrypted dex is from {filepath} with key {rc4k}"
+                            )
+                            return True
         return False
 
     def get_all_rc4_keys(self, keys: list) -> set:
