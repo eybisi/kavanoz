@@ -1,4 +1,6 @@
 import re
+
+
 class Regexs:
 
     def __init__(self):
@@ -45,15 +47,15 @@ class Regexs:
                                     "move-result-object [vp]\d+\s+" \
                                     f"iput-object [vp]\d+, [vp]\d+, L[^;]+;->{rc4_string_var} Ljava/lang/String;"
         ten_variant = r"invoke-static [vp]\d+, L[^;]+;->([^\(]+)\(\[I\)Ljava\/lang\/String;\s+" \
-                                    "move-result-object [vp]\d+\s+" \
-                                    f"iput-object [vp]\d+, [vp]\d+, L[^;]+;->{rc4_string_var} Ljava/lang/String;"
+            "move-result-object [vp]\d+\s+" \
+            f"iput-object [vp]\d+, [vp]\d+, L[^;]+;->{rc4_string_var} Ljava/lang/String;"
 
-        #invoke-static {v0}, Lcom/frog/assault/ZQwAlNnFmAdZiOe;->corespy([Ljava/lang/String;)Ljava/lang/String;
-        #move-result-object v0
-        #iput-object v0, p0, Lcom/frog/assault/ZQwAlNnFmAdZiOe;->OPxNlTsOuSiJtOg:Ljava/lang/String;
+        # invoke-static {v0}, Lcom/frog/assault/ZQwAlNnFmAdZiOe;->corespy([Ljava/lang/String;)Ljava/lang/String;
+        # move-result-object v0
+        # iput-object v0, p0, Lcom/frog/assault/ZQwAlNnFmAdZiOe;->OPxNlTsOuSiJtOg:Ljava/lang/String;
         eleven_variant = r"invoke-static [vp]\d+, L[^;]+;->([^\(]+)\(\[Ljava/lang/String;\)Ljava\/lang\/String;\s+" \
-                                    r"move-result-object [vp]\d+\s+" \
-                                    rf"iput-object [vp]\d+, [vp]\d+, L[^;]+;->{rc4_string_var} Ljava/lang/String;"
+            r"move-result-object [vp]\d+\s+" \
+            rf"iput-object [vp]\d+, [vp]\d+, L[^;]+;->{rc4_string_var} Ljava/lang/String;"
         # invoke-static v0, Ljknl/bgdfdntrwerlfwaxohrcyamosg/rathpswbuyyukhdihs/Qreunionscience;->symbolraise(Ljava/lang/Boolean;)Ljava/lang/StringBuffer;
         # move-result-object v0
         # invoke-virtual v0, Ljava/lang/StringBuffer;->toString()Ljava/lang/String;
@@ -87,17 +89,33 @@ class Regexs:
                                     r"invoke-virtual [vp]\d+, Ljava/lang/StringBuilder;->toString\(\)Ljava/lang/String;\s+" \
                                     r"move-result-object [vp]\d+\s+" \
                                     fr"iput-object [vp]\d+, [vp]\d+, L[^;]+;->{rc4_string_var} Ljava/lang/String;"
-        self.first_inner_regex["first_variant"] = re.compile(first_inner_first_variant)
-        self.first_inner_regex["second_variant"] = re.compile(first_inner_second_variant)
-        self.first_inner_regex["third_variant"] = re.compile(first_inner_third_variant)
-        self.first_inner_regex["fourth_variant"] = re.compile(first_inner_fourth_variant)
-        self.first_inner_regex["fifth_variant"] = re.compile(first_inner_fifth_variant)
-        self.first_inner_regex["six_variant"] = re.compile(first_inner_six_variant)
-        self.first_inner_regex["seven_variant"] = re.compile(first_inner_seven_variant)
-        self.first_inner_regex["eight_variant"] = re.compile(first_inner_eight_variant)
+        # invoke-static v0, Lcom/chuckle/define/QXqAuXjWzGjAnCiYyKoKp;->censusasset(Ljava/lang/StringBuilder;)Ljava/lang/String;
+        # move-result-object v0
+        # iput-object v0, v3, Lcom/chuckle/define/QXqAuXjWzGjAnCiYyKoKp;->TKiLpUsQmOtFqOoEoYjKpCxGeHjFeMlAoQfQuJmRdOwFwLw Ljava/lang/String;
+
+        first_inner_12 = "invoke-static [vp]\d+, L[^;]+;->([^\(]+)\(Ljava/lang/StringBuilder;\)Ljava/lang/String;\s+" \
+            "move-result-object [vp]\d+\s+" \
+            f"iput-object [vp]\d+, [vp]\d+, L[^;]+;->{rc4_string_var} Ljava/lang/String;"
+        self.first_inner_regex["first_variant"] = re.compile(
+            first_inner_first_variant)
+        self.first_inner_regex["second_variant"] = re.compile(
+            first_inner_second_variant)
+        self.first_inner_regex["third_variant"] = re.compile(
+            first_inner_third_variant)
+        self.first_inner_regex["fourth_variant"] = re.compile(
+            first_inner_fourth_variant)
+        self.first_inner_regex["fifth_variant"] = re.compile(
+            first_inner_fifth_variant)
+        self.first_inner_regex["six_variant"] = re.compile(
+            first_inner_six_variant)
+        self.first_inner_regex["seven_variant"] = re.compile(
+            first_inner_seven_variant)
+        self.first_inner_regex["eight_variant"] = re.compile(
+            first_inner_eight_variant)
         self.first_inner_regex["nine_variant"] = re.compile(nine)
         self.first_inner_regex["ten_variant"] = re.compile(ten_variant)
         self.first_inner_regex["eleven_variant"] = re.compile(eleven_variant)
+        self.first_inner_regex["12"] = re.compile(first_inner_12)
 
     def get_first_inner_regexs(self) -> dict:
         return self.first_inner_regex
@@ -126,3 +144,4 @@ class Regexs:
     def get_second_inner_regex():
         second_inner = "invoke-static L[^\(]+;->([^\(]+)\(\)Ljava/lang/String;"
         return re.compile(second_inner)
+
