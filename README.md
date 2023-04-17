@@ -84,4 +84,5 @@ You can use helper functions from unpacker class:
 - Most of the time packers use Application class to start unpacking sequence. Use `application = self.apk_object.get_attribute_value("application", "name")` to get application class defined in manifest file. 
 
 ### Thanks:
-[apkdetect.com](apkdetect.com) for unique samples to work with. 
+[apkdetect.com](https://apkdetect.com) for unique samples to work with. 
+
