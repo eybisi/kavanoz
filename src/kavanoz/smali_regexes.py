@@ -11,7 +11,7 @@ class Regexs:
         # move-result-object v0
         # iput-object v0, v3, Lcom/huge/dragon/DEdEoXwGgUxOmDnIdQiBhAeDwDbFbByQwQfQtYuWk;->XZkYqPfMoCcNtMzDiIpGaYlRuDjFeZfMtPcSq Ljava/lang/String;
 
-        first_inner_1 = rf"invoke-static [vp]\d+, L[^;]+;->([^\(]+)\(\w*\)+Ljava/lang/String;\s+" \
+        first_inner_1 = rf"invoke-static [vp]\d+, L[^;]+;->([^\(]+)\([a-zA-Z0-9;/]+\)Ljava/lang/String;\s+" \
             "move-result-object [vp]\d+\s+" \
             f"iput-object [vp]\d+, [vp]\d+, L[^;]+;->{rc4_string_var} Ljava/lang/String;"
 
@@ -96,6 +96,7 @@ class Regexs:
         first_inner_12 = "invoke-static [vp]\d+, L[^;]+;->([^\(]+)\(Ljava/lang/StringBuilder;\)Ljava/lang/String;\s+" \
             "move-result-object [vp]\d+\s+" \
             f"iput-object [vp]\d+, [vp]\d+, L[^;]+;->{rc4_string_var} Ljava/lang/String;"
+
         self.first_inner_regex["first_variant"] = re.compile(
             first_inner_1)
         self.first_inner_regex["second_variant"] = re.compile(
