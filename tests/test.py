@@ -25,6 +25,7 @@ from kavanoz.loader.simple_aes import LoaderSimpleAes
 from kavanoz.loader.appsealing import LoaderAppsealing
 from kavanoz.loader.simple import LoaderSimple
 from androguard.core.bytecodes.apk import APK
+from kavanoz.loader.kangapack import LoaderKangaPack
 from androguard.core.bytecodes.dvm import DalvikVMFormat
 
 
@@ -208,6 +209,16 @@ class TestAllLoaders(unittest.TestCase):
         res = saes.main()
         assert res["status"] == "success"
 
+    def test_kangapack(self):
+        """
+        Test that it can sum a list of integers
+        """
+        filename = os.path.join(os.path.dirname(__file__), "./test_apk/kangapack.apk")
+        apk_object = APK(filename)
+        dvms = [DalvikVMFormat(dex) for dex in apk_object.get_all_dex()]
+        skanga = LoaderKangaPack(apk_object, dvms)
+        res = skanga.main()
+        assert res["status"] == "success"
 
 if __name__ == "__main__":
     unittest.main()

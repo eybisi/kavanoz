@@ -57,7 +57,8 @@ class Unpacker:
                         break
                 else:
                     not_found_counter += 1
-
+        if len(act_serv_recv) == 0:
+            return False
         score = not_found_counter / len(act_serv_recv)
         if score > 0.80:
             self.logger.info(f"Packed : Score : {score}")
