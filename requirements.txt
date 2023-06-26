@@ -1,0 +1,8 @@
+androguard==3.3.5
+androidemu==0.0.2
+arc4==0.3.0
+androguard
+halo==0.0.31
+lief==0.12.3
+loguru==0.6.0
+pycryptodome==3.16.0

@@ -1,8 +1,12 @@
 # 🫙 kavanoz 🫙
+![](https://img.shields.io/github/license/eybisi/kavanoz)
+![](https://img.shields.io/github/stars/eybisi/kavanoz)
+
 Statically unpacking common android banker malware.
 
 Ever wanted to get payload from packed malware without running android emulator ? Me neither.
 
+![](assets/unpack.gif)
 
 ### Requirements
 
@@ -39,18 +43,18 @@ for plugin_result in k.get_plugin_results():
 
 ### :snake: Scripts:
 
-- [rc4.py](loader/rc4.py) Generic rc4 encrypted asset file. Script covers multiple versions.
-- [old_rc4.py](loader/old_rc4.py) Another Generic rc4 encrypted asset file.
-- [subapp.py](loader/subapp.py) Decryption of file with key derived from Manifest file ProtectKey variable
-- [multidex.py](loader/multidex.py) Multidex like loader with inflated packed file. (zlib compression)
-- [coper.py](loader/coper.py) Extract rc4 key from native lib with emulation (AndroidNativeEmu)
-- [moqhao.py](loader/moqhao.py) Emulation for moqhau unpacking. 
-- [sesdex.py](loader/sesdex.py) 
-- [simple_aes.py](loader/simple_aes.py) 
-- [simple_xor.py](loader/simple_xor.py) 
-- [simple_xor2.py](loader/simple_xor2.py)
-- [simple_xor_zlib.py](loader/simple_xor_zlib.py)
-- [subapp.py](loader/subapp.py) Decrypt asset with package name
+- [rc4.py](src/kavanoz/loader/rc4.py) Generic rc4 encrypted asset file. Script covers multiple versions.
+- [old_rc4.py](src/kavanoz/loader/old_rc4.py) Another Generic rc4 encrypted asset file.
+- [subapp.py](src/kavanozloader/subapp.py) Decryption of file with key derived from Manifest file ProtectKey variable
+- [multidex.py](src/kavanoz/loader/multidex.py) Multidex like loader with inflated packed file. (zlib compression)
+- [coper.py](src/kavanoz/loader/coper.py) Extract rc4 key from native lib with emulation (AndroidNativeEmu)
+- [moqhao.py](src/kavanozloader/moqhao.py) Emulation for moqhau unpacking.
+- [sesdex.py](src/kavanoz/loader/sesdex.py)
+- [simple_aes.py](src/kavanoz/loader/simple_aes.py)
+- [simple_xor.py](src/kavanoz/loader/simple_xor.py)
+- [simple_xor2.py](src/kavanoz/loader/simple_xor2.py)
+- [simple_xor_zlib.py](src/kavanoz/loader/simple_xor_zlib.py)
+- [subapp.py](src/kavanoz/loader/subapp.py) Decrypt asset with package name
 
 ####  Note
 
@@ -77,16 +81,11 @@ You can use helper functions from unpacker class:
 
 ### :book: Tips
 
-- self.dvms hold dex dvm objects. You can get class with `dvm.get_class(smali_annotation_of_class)`. Use jadx smali represantation to get class string to search 
-- You can get method object from class obj with `c.get_methods()`. This function is generator so you cant get target function in O(1). 
+- self.dvms hold dex dvm objects. You can get class with `dvm.get_class(smali_annotation_of_class)`.
 - You can use get_smali function and give target method obj to get smali represantation of target method. Then apply some regex to get data from smali. There are lots of defined regexs in [smali_regexes.py](smali_regexes.py) file to lookup. 
 - Most of the time packers use file from asset folder. You can get files with `self.apk_object.get_files()` 
 - Most of the time packers use Application class to start unpacking sequence. Use `application = self.apk_object.get_attribute_value("application", "name")` to get application class defined in manifest file. 
 
+### Thanks:
+[apkdetect.com](https://apkdetect.com) for unique samples to work with. 
 
-- do not use 
-```python
-x = b""
-x += b'\x10'
-```
-this consumes more time than bytearray() and append
