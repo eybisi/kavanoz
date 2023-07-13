@@ -24,6 +24,7 @@ from kavanoz.loader.simple_xor_zlib import LoaderSimpleXorZlib
 from kavanoz.loader.simple_aes import LoaderSimpleAes
 from kavanoz.loader.appsealing import LoaderAppsealing
 from kavanoz.loader.simple import LoaderSimple
+from kavanoz.loader.pronlocker import LoaderPr0nLocker
 from androguard.core.bytecodes.apk import APK
 from kavanoz.loader.kangapack import LoaderKangaPack
 from androguard.core.bytecodes.dvm import DalvikVMFormat
@@ -44,6 +45,8 @@ class TestAllLoaders(unittest.TestCase):
         rc4 = LoaderRc4(apk_object, dvms)
         res = rc4.main()
         assert res["status"] == "success"
+        if rc4.decrypted_payload_path:
+            os.remove(rc4.decrypted_payload_path)
         filename = os.path.join(
             os.path.dirname(__file__), "./test_apk/loader_rc4_second_key_0.apk"
         )
@@ -52,6 +55,8 @@ class TestAllLoaders(unittest.TestCase):
         rc4 = LoaderRc4(apk_object, dvms)
         res = rc4.main()
         assert res["status"] == "success"
+        if rc4.decrypted_payload_path:
+            os.remove(rc4.decrypted_payload_path)
         filename = os.path.join(
             os.path.dirname(__file__), "./test_apk/loader_rc4_key_0.apk"
         )
@@ -59,8 +64,9 @@ class TestAllLoaders(unittest.TestCase):
         dvms = [DalvikVMFormat(dex) for dex in apk_object.get_all_dex()]
         rc4 = LoaderRc4(apk_object, dvms)
         res = rc4.main()
-        res = rc4.main()
         assert res["status"] == "success"
+        if rc4.decrypted_payload_path:
+            os.remove(rc4.decrypted_payload_path)
 
         filename = os.path.join(
             os.path.dirname(__file__), "./test_apk/loader_rc4_multiple_stage.apk"
@@ -70,6 +76,8 @@ class TestAllLoaders(unittest.TestCase):
         rc4 = LoaderRc4(apk_object, dvms)
         res = rc4.main()
         assert res["status"] == "success"
+        if rc4.decrypted_payload_path:
+            os.remove(rc4.decrypted_payload_path)
 
     def test_inflate(self):
         """
@@ -81,6 +89,8 @@ class TestAllLoaders(unittest.TestCase):
         rc4 = LoaderMultidex(apk_object, dvms)
         res = rc4.main()
         assert res["status"] == "success"
+        if rc4.decrypted_payload_path:
+            os.remove(rc4.decrypted_payload_path)
 
     def test_inflate_second(self):
         """
@@ -95,6 +105,8 @@ class TestAllLoaders(unittest.TestCase):
         rc4 = LoaderMultidex(apk_object, dvms)
         res = rc4.main()
         assert res["status"] == "success"
+        if rc4.decrypted_payload_path:
+            os.remove(rc4.decrypted_payload_path)
 
     def test_subapp(self):
         """
@@ -106,6 +118,8 @@ class TestAllLoaders(unittest.TestCase):
         rc4 = LoaderSubapp(apk_object, dvms)
         res = rc4.main()
         assert res["status"] == "success"
+        if rc4.decrypted_payload_path:
+            os.remove(rc4.decrypted_payload_path)
 
     def test_moqhao(self):
         """
@@ -117,6 +131,8 @@ class TestAllLoaders(unittest.TestCase):
         moqhao = LoaderMoqhao(apk_object, dvms)
         res = moqhao.main()
         assert res["status"] == "success"
+        if moqhao.decrypted_payload_path:
+            os.remove(moqhao.decrypted_payload_path)
 
     def test_coper(self):
         """
@@ -128,6 +144,9 @@ class TestAllLoaders(unittest.TestCase):
         coper = LoaderCoper(apk_object, dvms)
         res = coper.main()
         assert res["status"] == "success"
+        if coper.decrypted_payload_path:
+            os.remove(coper.decrypted_payload_path)
+            
 
     def test_sesdex(self):
         """
@@ -139,6 +158,8 @@ class TestAllLoaders(unittest.TestCase):
         sesdex = LoaderSesdex(apk_object, dvms)
         res = sesdex.main()
         assert res["status"] == "success"
+        if sesdex.decrypted_payload_path:
+            os.remove(sesdex.decrypted_payload_path)
 
     def test_multidex_header(self):
         """
@@ -153,6 +174,8 @@ class TestAllLoaders(unittest.TestCase):
         mwheader = LoaderMultidexHeader(apk_object, dvms)
         res = mwheader.main()
         assert res["status"] == "success"
+        if mwheader.decrypted_payload_path:
+            os.remove(mwheader.decrypted_payload_path)
 
     def test_simple_xor(self):
         """
@@ -165,6 +188,8 @@ class TestAllLoaders(unittest.TestCase):
         sxorzlib = LoaderSimpleXor(apk_object, dvms)
         res = sxorzlib.main()
         assert res["status"] == "success"
+        if sxorzlib.decrypted_payload_path:
+            os.remove(sxorzlib.decrypted_payload_path)
 
     def test_simple_xor2(self):
         """
@@ -176,6 +201,8 @@ class TestAllLoaders(unittest.TestCase):
         sxor2 = LoaderSimpleXor2(apk_object, dvms)
         res = sxor2.main()
         assert res["status"] == "success"
+        if sxor2.decrypted_payload_path:
+            os.remove(sxor2.decrypted_payload_path)
 
     def test_simple_xor_zlib(self):
         """
@@ -189,6 +216,8 @@ class TestAllLoaders(unittest.TestCase):
         sxorzlib = LoaderSimpleXorZlib(apk_object, dvms)
         res = sxorzlib.main()
         assert res["status"] == "success"
+        if sxorzlib.decrypted_payload_path:
+            os.remove(sxorzlib.decrypted_payload_path)
         filename = os.path.join(
             os.path.dirname(__file__), "./test_apk/simple_skip4_zlib_base64.apk"
         )
@@ -197,6 +226,8 @@ class TestAllLoaders(unittest.TestCase):
         sxorzlib = LoaderSimpleXorZlib(apk_object, dvms)
         res = sxorzlib.main()
         assert res["status"] == "success"
+        if sxorzlib.decrypted_payload_path:
+            os.remove(sxorzlib.decrypted_payload_path)
 
     def test_simple_aes(self):
         """
@@ -208,6 +239,8 @@ class TestAllLoaders(unittest.TestCase):
         saes = LoaderSimpleAes(apk_object, dvms)
         res = saes.main()
         assert res["status"] == "success"
+        if saes.decrypted_payload_path:
+            os.remove(saes.decrypted_payload_path)
 
     def test_kangapack(self):
         """
@@ -219,6 +252,21 @@ class TestAllLoaders(unittest.TestCase):
         skanga = LoaderKangaPack(apk_object, dvms)
         res = skanga.main()
         assert res["status"] == "success"
+        if skanga.decrypted_payload_path:
+            os.remove(skanga.decrypted_payload_path)
+
+    def test_pronlocker(self):
+        """
+        Test that it can sum a list of integers
+        """
+        filename = os.path.join(os.path.dirname(__file__), "./test_apk/pronlocker.apk")
+        apk_object = APK(filename)
+        dvms = [DalvikVMFormat(dex) for dex in apk_object.get_all_dex()]
+        spron = LoaderPr0nLocker(apk_object, dvms)
+        res = spron.main()
+        assert res["status"] == "success"
+        if spron.decrypted_payload_path:
+            os.remove(spron.decrypted_payload_path)
 
 if __name__ == "__main__":
     unittest.main()
