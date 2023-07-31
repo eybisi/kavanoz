@@ -11,8 +11,8 @@ class LoaderKangaPack(Unpacker):
     encrypted file is appended to end of classes.dex
     aes decryption key/iv is in native library used with openssl evp api, keys are exported 
     """
-    def __init__(self, apk_obj, dvms):
-        super().__init__("loader.kangapack", "Unpacker for kangapack", apk_obj, dvms)
+    def __init__(self, apk_obj, dvms, output_dir):
+        super().__init__("loader.kangapack", "Unpacker for kangapack", apk_obj, dvms, output_dir)
 
     def start_decrypt(self, native_lib: str = ""):
         # Get encrypted payload

@@ -6,9 +6,9 @@ from kavanoz.unpack_plugin import Unpacker
 
 
 class LoaderOldRc4(Unpacker):
-    def __init__(self, apk_obj, dvms):
+    def __init__(self, apk_obj, dvms, output_dir):
         super().__init__(
-            "loader.rc4.v2", "Unpacker old rc4 based variants", apk_obj, dvms
+            "loader.rc4.v2", "Unpacker old rc4 based variants", apk_obj, dvms, output_dir
         )
 
     def start_decrypt(self, native_lib: str = ""):

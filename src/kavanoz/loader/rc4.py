@@ -17,9 +17,9 @@ class LoaderRc4(Unpacker):
     byte_array_data = []
     decrypted_payload_path = None
 
-    def __init__(self, apk_object, dvms):
+    def __init__(self, apk_object, dvms, output_dir):
         super().__init__(
-            "loader.rc4.v1", "Unpacker rc4 based variants", apk_object, dvms
+            "loader.rc4.v1", "Unpacker rc4 based variants", apk_object, dvms, output_dir
         )
 
     def start_decrypt(self):
