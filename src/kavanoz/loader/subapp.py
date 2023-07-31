@@ -5,9 +5,9 @@ from kavanoz.utils import xor
 
 
 class LoaderSubapp(Unpacker):
-    def __init__(self, apk_obj: APK, dvms):
+    def __init__(self, apk_obj: APK, dvms, output_dir):
         super().__init__(
-            "loader.subapp", "Unpacker for chinese packer1, Beingyi", apk_obj, dvms
+            "loader.subapp", "Unpacker for chinese packer1, Beingyi", apk_obj, dvms, output_dir
         )
 
     def start_decrypt(self, native_lib: str = ""):

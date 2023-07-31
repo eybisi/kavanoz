@@ -14,8 +14,8 @@ import os
 
 
 class LoaderCoper(Unpacker):
-    def __init__(self, apk_obj, dvms):
-        super().__init__("loader.coper", "Unpacker for coper", apk_obj, dvms)
+    def __init__(self, apk_obj, dvms, output_dir):
+        super().__init__("loader.coper", "Unpacker for coper", apk_obj, dvms, output_dir)
 
     def start_decrypt(self, native_lib: str = ""):
         arm32_native_libs = [

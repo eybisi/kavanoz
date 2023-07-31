@@ -5,9 +5,9 @@ import struct
 
 
 class LoaderMultidexHeader(Unpacker):
-    def __init__(self, apk_obj: APK, dvms):
+    def __init__(self, apk_obj: APK, dvms, output_dir):
         super().__init__(
-            "loader.multidex.header", "Unpacker for multidex", apk_obj, dvms
+            "loader.multidex.header", "Unpacker for multidex", apk_obj, dvms, output_dir
         )
 
     def start_decrypt(self, native_lib: str = ""):
