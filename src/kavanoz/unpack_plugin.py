@@ -193,7 +193,7 @@ class Unpacker:
 
     def check_and_write_file(self, dec) -> bool:
         """
-        Check headers and write extracted dex to current path. ZIP/Zlib streams is decompressed and first instance of dex file is written.
+        Check headers and write extracted dex to output_dir, if output_dir is empty save to current path. ZIP/Zlib streams is decompressed and first instance of dex file is written.
         """
         if dec[:8] in dex_headers:
             self.decrypted_payload_path = os.path.join(self.output_dir, self.calculate_name(dec))
