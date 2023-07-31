@@ -13,10 +13,13 @@ from halo import Halo
 
 
 class Kavanoz:
-    def __init__(self, apk_path, output_dir=None):
+    def __init__(self, apk_path=None, apk_object=None, output_dir=None):
         self.output_dir = output_dir
         s = time.time()
-        self.apk_object = APK(apk_path)
+        if apk_object:
+            self.apk_object = apk_object
+        else:
+            self.apk_object = APK(apk_path)
         # load plugins
         self.plugins = [
             subplug
