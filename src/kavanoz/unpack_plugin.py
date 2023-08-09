@@ -226,7 +226,7 @@ class Unpacker:
                 self.logger.error(e)
                 return False
             if decrypted[:8] in dex_headers:
-                self.decrypted_payload_path = self.calculate_name(decrypted)
+                self.decrypted_payload_path = os.path.join(self.output_dir, self.calculate_name(decrypted))
                 self.logger.success(f"Decryption succesfull!\t Found zlib file")
                 with open(self.decrypted_payload_path, "wb") as fp:
                     fp.write(decrypted)
