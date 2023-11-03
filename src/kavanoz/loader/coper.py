@@ -39,8 +39,17 @@ class LoaderCoper(Unpacker):
             return
         self.logger.info("Loaded modules:")
         if not self.setup_hook():
-            return
-        self.emulator.call_symbol(self.target_module, self.target_function.name)
+            self.logger.info("Failed to setup hooks maybe no srtcat symbol ?")
+            self.logger.info("Trying to find strings in stack")
+        #self.emulator.mu.hook_add(UC_HOOK_CODE, self.hook_debug_print)
+        self.emulator.mu.hook_add(UC_HOOK_MEM_READ_UNMAPPED, self.hook_unmapped_read)
+        try:
+            self.emulator.call_symbol(self.target_module, self.target_function.name)
+        except Exception as e:
+            self.logger.info(f"Exception while calling symbol: {e}")
+            if len(self.resolved_strings) == 0:
+                self.logger.info("No strings found")
+                return
         self.logger.info(f"Androidemu extracted rc4 key: {self.resolved_strings[0]}")
         self.decrypt_files(self.resolved_strings[0])
         os.remove(fname)
@@ -74,6 +83,28 @@ class LoaderCoper(Unpacker):
         self.target_module = self.emulator.load_library(self.target_lib, do_init=False)
         return True
 
+    def hook_debug_print(self, uc, address, size, user_data):
+        instruction = uc.mem_read(address, size)
+        instruction_str = ''.join('{:02x} '.format(x) for x in instruction)
+
+        print('# Tracing instruction at 0x%x, instruction size = 0x%x, instruction = %s' % (address, size, instruction_str))
+
+    def hook_unmapped_read(self, uc, access, address, size, value, user_data):
+        # Read stack and print it byte per byte
+        sp = uc.reg_read(UC_ARM_REG_SP)
+        stack_data = uc.mem_read(sp, 0x3ef+65)
+        # Stack data contains list of strings ends with \x00 but there are also
+        # filler \x00 bytes in between them. We need to split them.
+        stack_data = stack_data.split(b'\x00')
+        # Filter out empty strings
+        stack_data = [x for x in stack_data if x != b'']
+        # Decode strings
+        stack_data = [x for x in stack_data]
+        self.resolved_strings.append(stack_data[-1].decode('utf-8'))
+        # Print stack
+
+            
+
     def setup_hook(self):
         for module in self.emulator.modules:
             if module.filename == self.target_lib:
@@ -86,6 +117,7 @@ class LoaderCoper(Unpacker):
                 # )
                 strncat = module.find_symbol("__strncat_chk")
                 if strncat == None:
+                    self.logger.info("No strncat symbol 😔")
                     return False
                 self.logger.debug(f"{hex(strncat.address)} strcat_chk addr")
                 self.emulator.mu.hook_add(
@@ -105,6 +137,8 @@ class LoaderCoper(Unpacker):
             ">>> Memory READ at 0x%x, data size = %u, pc: %x, data value = 0x%s"
             % (address, size, pc, data.hex())
         )
+
+
 
     def hook_strncat(self, uc: unicorn.unicorn.Uc, address, size, user_data):
         # print(f"current strncat hook addr : {hex(address)}")
