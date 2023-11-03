@@ -20,9 +20,9 @@ def unsigned_lshift(val, n):
 class LoaderMultidex(Unpacker):
     ProtectKey = ""
 
-    def __init__(self, apk_obj, dvms):
+    def __init__(self, apk_obj, dvms, output_dir):
         super().__init__(
-            "loader.multidex", "Unpacker for multidex variants", apk_obj, dvms
+            "loader.multidex", "Unpacker for multidex variants", apk_obj, dvms, output_dir
         )
 
     def start_decrypt(self, native_lib: str = ""):

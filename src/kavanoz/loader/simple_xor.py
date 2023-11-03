@@ -36,12 +36,13 @@ find_xor_key = (
 class LoaderSimpleXor(Unpacker):
     decrypted_payload_path = None
 
-    def __init__(self, apk_object, dvms):
+    def __init__(self, apk_object, dvms, output_dir):
         super().__init__(
             "loader.simplexor",
             "Unpacker for multiple simple unpackers",
             apk_object,
             dvms,
+            output_dir
         )
 
     def start_decrypt(self):

@@ -8,7 +8,7 @@ import hashlib
 import zlib
 from kavanoz.utils import dex_headers, pkzip_headers, zlib_headers
 from loguru import logger
-
+import os
 
 class Unpacker:
 
@@ -16,7 +16,7 @@ class Unpacker:
     name = "DefaultUnpackName"
 
     def __init__(
-        self, tag: str, name: str, apk_object: APK, dvms: list[DalvikVMFormat]
+        self, tag: str, name: str, apk_object: APK, dvms: list[DalvikVMFormat], output_dir
     ):
         """Default unpacking plugin"""
         self.tag = tag
@@ -25,6 +25,10 @@ class Unpacker:
         self.logger = logger
         self.apk_object = apk_object
         self.dvms = list(filter(self.filter_dvms, dvms))
+        if output_dir:
+            self.output_dir = output_dir
+        else:
+            self.output_dir = os.getcwd()
 
     @staticmethod
     def filter_dvms(dvm):
@@ -189,10 +193,10 @@ class Unpacker:
 
     def check_and_write_file(self, dec) -> bool:
         """
-        Check headers and write extracted dex to current path. ZIP/Zlib streams is decompressed and first instance of dex file is written.
+        Check headers and write extracted dex to output_dir, if output_dir is empty save to current path. ZIP/Zlib streams is decompressed and first instance of dex file is written.
         """
         if dec[:8] in dex_headers:
-            self.decrypted_payload_path = self.calculate_name(dec)
+            self.decrypted_payload_path = os.path.join(self.output_dir, self.calculate_name(dec))
             self.logger.success(
                 f"Decryption succesfull! Output dex : {self.decrypted_payload_path}"
             )
@@ -211,7 +215,7 @@ class Unpacker:
                                 f"Extracting dex from zip file. Output dex : {self.decrypted_payload_path}"
                             )
                             file_data = f.read()
-                            self.decrypted_payload_path = self.calculate_name(file_data)
+                            self.decrypted_payload_path = os.path.join(self.output_dir, self.calculate_name(dec))
                             with open(self.decrypted_payload_path, "wb") as fp:
                                 fp.write(file_data)
                             return True
@@ -222,7 +226,7 @@ class Unpacker:
                 self.logger.error(e)
                 return False
             if decrypted[:8] in dex_headers:
-                self.decrypted_payload_path = self.calculate_name(decrypted)
+                self.decrypted_payload_path = os.path.join(self.output_dir, self.calculate_name(decrypted))
                 self.logger.success(f"Decryption succesfull!\t Found zlib file")
                 with open(self.decrypted_payload_path, "wb") as fp:
                     fp.write(decrypted)

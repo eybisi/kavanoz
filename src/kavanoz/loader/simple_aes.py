@@ -39,12 +39,13 @@ find_aes_key = (
 class LoaderSimpleAes(Unpacker):
     decrypted_payload_path = None
 
-    def __init__(self, apk_object, dvms):
+    def __init__(self, apk_object, dvms, output_dir):
         super().__init__(
             "loader.simpleaes",
             "Unpacker for multiple simple unpackers",
             apk_object,
             dvms,
+            output_dir
         )
 
     def start_decrypt(self):

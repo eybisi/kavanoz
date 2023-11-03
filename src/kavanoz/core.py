@@ -13,9 +13,13 @@ from halo import Halo
 
 
 class Kavanoz:
-    def __init__(self, apk_path):
+    def __init__(self, apk_path=None, apk_object=None, output_dir=None):
+        self.output_dir = output_dir
         s = time.time()
-        self.apk_object = APK(apk_path)
+        if apk_object:
+            self.apk_object = apk_object
+        else:
+            self.apk_object = APK(apk_path)
         # load plugins
         self.plugins = [
             subplug
@@ -31,18 +35,19 @@ class Kavanoz:
 
     def get_plugin_results(self):
         for plugin in self.plugins:
-            p = plugin(self.apk_object, self.dvms)
+            p = plugin(self.apk_object, self.dvms, output_dir=self.output_dir)
             yield p.main()
 
     def is_packed(self):
-        p = Unpacker("test", "test", apk_object=self.apk_object, dvms=self.dvms)
+        p = Unpacker("test", "test", apk_object=self.apk_object, dvms=self.dvms, output_dir=self.output_dir)
         return p.is_packed()
 
 
 @click.command()
 @click.argument("filename", type=click.Path(exists=True))
+@click.option("--output-dir", "-o", type=click.Path(exists=True), default='.', help='Output directory path')
 @click.option("-v", "--verbose", count=True)
-def cli(filename, verbose):
+def cli(filename, output_dir, verbose):
 
     logging.basicConfig(handlers=[InterceptHandler()], level=0, force=True)
     logger.disable("androguard")
@@ -51,7 +56,7 @@ def cli(filename, verbose):
         logger.add(sys.stderr, level=verbose)
     spinner = Halo(text="Extracting apk/dvm information", spinner="star")
     spinner.start()
-    k = Kavanoz(filename)
+    k = Kavanoz(filename, output_dir=output_dir)
     spinner.stop()
     spinner.text = f"Plugin {k.plugins[0]} is running"
     spinner.start()

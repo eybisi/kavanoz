@@ -8,8 +8,8 @@ class LoaderMoqhao(Unpacker):
     Read asset files. Try to decrypt with : file[11] is xor key to decrypt file[12:]
     """
 
-    def __init__(self, apk_obj: APK, dvms):
-        super().__init__("loader.moqhao", "Unpacker for moqhao", apk_obj, dvms)
+    def __init__(self, apk_obj: APK, dvms, output_dir):
+        super().__init__("loader.moqhao", "Unpacker for moqhao", apk_obj, dvms, output_dir)
 
     def start_decrypt(self, native_lib: str = ""):
         self.logger.info("Starting to decrypt")

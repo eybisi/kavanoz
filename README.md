@@ -9,7 +9,7 @@ Ever wanted to get payload from packed malware without running android emulator 
 ![](assets/unpack.gif)
 
 ### Requirements
-
+- python >= 3.9 
 - arc4
 - androguard
 - lief
