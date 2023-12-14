@@ -22,7 +22,11 @@ class LoaderMultidex(Unpacker):
 
     def __init__(self, apk_obj, dvms, output_dir):
         super().__init__(
-            "loader.multidex", "Unpacker for multidex variants", apk_obj, dvms, output_dir
+            "loader.multidex",
+            "Unpacker for multidex variants",
+            apk_obj,
+            dvms,
+            output_dir,
         )
 
     def start_decrypt(self, native_lib: str = ""):
@@ -63,7 +67,97 @@ class LoaderMultidex(Unpacker):
         else:
             self.logger.info("Cannot find zip function")
             self.logger.info("Second plan for zipper")
-            self.second_plan()
+            r = self.second_plan()
+            if r is not None:
+                self.logger.info("Second plan worked")
+                self.logger.info(f"{r}")
+                return
+            else:
+                self.logger.info("Second plan failed")
+                self.third_plan()
+
+    def third_plan(self):
+        """
+        public class ldhgedudr {
+            public static void fslstmkpgcrup(InputStream input, OutputStream output) throws Exception {
+                InflaterInputStream is = new InflaterInputStream(input);
+                InflaterOutputStream os = new InflaterOutputStream(output);
+                swtj(is, os);
+                os.close();
+                is.close();
+            }
+
+            private static void swtj(InputStream inputStream, OutputStream outputStream) throws Exception {
+                char[] key = rtpgi.kphimwvplfd.toCharArray();
+        """
+        input_initials = self.find_input_output_stream()
+        for input_initial in input_initials:
+            if input_initial is not None:
+                self.logger.info("Found input output stream")
+                _function, dvm = input_initial
+                self.logger.info(f"{_function}")
+                key = self.extract_variable_for_third_plan(_function, dvm)
+                if key is not None:
+                    self.logger.info(f"Found key : {key}")
+                    if self.brute_assets(key):
+                        if self.is_really_unpacked():
+                            self.logger.info("fully unpacked")
+                        else:
+                            self.logger.info("not fully unpacked")
+                        return
+
+        return None
+
+    def extract_variable_for_third_plan(self, target_method: EncodedMethod, dvm):
+        smali_str = self.get_smali(target_method)
+        """
+        0059925c: 6200 9e53               0000: sget-object         v0, Lwhg/wwtgweg/mtgmdloqs/tduk/rtpgi;->kphimwvplfd:Ljava/lang/String; # field@539e
+        00599260: 6e10 5099 0000          0002: invoke-virtual      {v0}, Ljava/lang/String;->toCharArray()[C # method@9950
+        00599266: 0c00                    0005: move-result-object  v0
+        """
+        match = re.findall(
+            r"sget-object [vp]\d+, (L[^;]+;->[^\(]+) Ljava/lang/String;\s+"
+            r"invoke-virtual {?[vp]\d+}?, Ljava/lang/String;->toCharArray\(\)\[C",
+            smali_str,
+        )
+        if len(match) == 0:
+            self.logger.info(
+                f"Unable to extract variable from {target_method.get_name()}"
+            )
+            self.logger.info("Exiting ...")
+            return None
+        if len(match) == 1:
+            self.logger.info(f"Found variable ! : {match[0]}")
+            key_variable = match[0].split("->")[1]
+            key_class = match[0].split("->")[0]
+            method = self.find_method(key_class, "<clinit>")
+            if method:
+                smali_str = self.get_smali(method)
+                # 0059a656: 1a00 7884               0039: const-string        v0, "恐恜恞思恕恐恛恟恟恇恁恕恑思恜恊恃恃恑恕恆恛恄思恲恃恃" # string@8478
+                # 0059a65a: 7120 b897 1000          003b: invoke-static       {v0, v1}, Lehl/vlnirvo/rwipgpued/dnhwp/fstmjrrront;->hfuojgtnouejrq(Ljava/lang/String;, I)Ljava/lang/String; # method@97b8
+                key_variable = re.findall(
+                    r"const-string(?:/jumbo)? [vp]\d+, '(.*)'\s+"
+                    f"sput-object v0, {match[0]} Ljava/lang/String;",
+                    smali_str,
+                )
+                if len(key_variable) == 1:
+                    self.logger.info(
+                        f"Found key variable from zip class <clinit> {key_variable[0]}"
+                    )
+                    return key_variable[0]
+                else:
+                    self.logger.info("Not found key variable from clinit")
+                    self.logger.info(f"{smali_str}")
+                    return None
+            else:
+                self.logger.info(
+                    f"Not found <clinit> method for class {target_method.class_name}"
+                )
+                return None
+        else:
+            self.logger.info("Something is wrong .. 🤔")
+            self.logger.info("Found multiple ?? : {match}")
+            return None
 
     def second_plan(self):
         application = self.apk_object.get_attribute_value("application", "name")
@@ -105,7 +199,7 @@ class LoaderMultidex(Unpacker):
                     else:
                         return False
 
-        return target_method
+        return None
 
     def find_zip_function(self):
         target_method = None
@@ -120,6 +214,23 @@ class LoaderMultidex(Unpacker):
                         target_method = m
                         return target_method, d
         return None
+
+    def find_input_output_stream(self):
+        target_method = None
+        target_method_and_dvms = []
+        for d in self.dvms:
+            for c in d.get_classes():
+                for m in c.get_methods():
+                    if (
+                        m.get_descriptor()
+                        == "(Ljava/io/InputStream; Ljava/io/OutputStream;)V"
+                    ):
+                        if m.access_flags & 0x2 == 0x2:
+                            self.logger.info("Found method with private access")
+
+                            target_method = m
+                            target_method_and_dvms.append((target_method, d))
+        return target_method_and_dvms
 
     def find_decrypt_protect_arrays(self):
         for d in self.dvms:
@@ -295,9 +406,11 @@ class LoaderMultidex(Unpacker):
         return None
 
     def brute_assets(self, key: str):
-        self.logger.info(f"Starting brute-force inflate {key}")
         asset_list = self.apk_object.get_files()
         for filepath in asset_list:
+            self.logger.info(
+                f"Starting brute-force inflate {key} for file : {filepath}"
+            )
             f = self.apk_object.get_file(filepath)
             if self.solve_encryption(f, key) or self.solve_encryption2(f, key):
                 self.logger.info("Decryption finished!!")
@@ -317,6 +430,7 @@ class LoaderMultidex(Unpacker):
         else:
             encrypted = file_data
 
+        self.logger.info(f"Start of encrypted data {encrypted[:5]} ")
         iArr = []  # 2
         iArr2 = []  # 4
         iArr3 = [None] * 27  # 27
@@ -352,12 +466,16 @@ class LoaderMultidex(Unpacker):
             iArr3[i] = i2
 
         decrypted_bytes = bytearray()
+        # self.logger.info(f"{iArr3}")
         z = 0
         for b in encrypted:
             if z % 8 == 0:
                 h0 = iArr[0]
                 h1 = iArr[1]
                 for k in iArr3:
+                    if k == None:
+                        self.logger.error("k is none")
+                        return False
                     tmp0 = ((unsigned_rshift(h1, 8) | (h1 << 24) & 0xFFFFFFFF) + h0) ^ k
                     tmp1 = ((h0 << 3) & 0xFFFFFFFF | unsigned_rshift(h0, 29)) ^ tmp0
                     h0 = tmp1 & 0xFFFFFFFF
