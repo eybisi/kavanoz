@@ -30,6 +30,7 @@ class LoaderRc4(Unpacker):
         self.attach_class = self.find_attach_class()
         if self.attach_class is None:
             return
+
         all_possible_rc4_keys = self.find_rc4_keys_from_attach_class(self.attach_class)
         self.logger.info(f"all possible keys : {all_possible_rc4_keys}")
         if all_possible_rc4_keys:
@@ -38,10 +39,18 @@ class LoaderRc4(Unpacker):
                 if not self.is_really_unpacked():
                     if self.bruteforce_all_strings():
                         self.logger.info("Multiple stage is decrypted")
+        else:
+            if self.bruteforce_all_strings():
+                self.logger.info("Multiple stage is decrypted")
 
     def bruteforce_all_strings(self):
         if not self.is_really_unpacked():
-            all_possible_rc4_keys = filter(lambda x: x != None,self.find_all_strings(self.dvms[-1]))
+            all_possible_rc4_keys = list(
+                filter(
+                    lambda x: x != None,
+                    self.find_all_strings_from_application_class(self.dvms[-1]),
+                )
+            )
             if self.decrypt_files(all_possible_rc4_keys):
                 return self.bruteforce_all_strings()
             else:
@@ -56,6 +65,15 @@ class LoaderRc4(Unpacker):
         # self.logger.info(f"application android:name = {application}")
         application_smali = "L" + application.replace(".", "/") + ";"
         target_method = self.find_method(application_smali, "attachBaseContext")
+        return target_method
+
+    def find_application_init(self):
+        application = self.apk_object.get_attribute_value("application", "name")
+        if application == None:
+            return None
+        # self.logger.info(f"application android:name = {application}")
+        application_smali = "L" + application.replace(".", "/") + ";"
+        target_method = self.find_method(application_smali, "<init>")
         return target_method
 
     def find_rc4_keys_from_attach_class(self, target_method):
@@ -85,6 +103,16 @@ class LoaderRc4(Unpacker):
         all_rc4_keys = set()
         for klass in dvm.get_classes():
             all_rc4_keys.update(self.find_rc4_keys_from_klass_fields(klass))
+        return all_rc4_keys
+
+    def find_all_strings_from_application_class(self, dvm: DalvikVMFormat) -> set:
+        application = self.apk_object.get_attribute_value("application", "name")
+        if application == None:
+            return None
+        application_smali = "L" + application.replace(".", "/") + ";"
+        klass = self.find_class_in_dvms(application_smali)
+        all_rc4_keys = set()
+        all_rc4_keys.update(self.find_rc4_keys_from_klass_fields(klass))
         return all_rc4_keys
 
     def find_rc4_keys_from_klass_fields(self, klass) -> set:
@@ -209,19 +237,20 @@ class LoaderRc4(Unpacker):
 
     def decrypt_files(self, rc4key):
         for filepath in self.apk_object.get_files():
-            fd = self.apk_object.get_file(filepath)
-            for rc4k in rc4key:
-                if len(rc4k) > 0:
-                    dede = ARC4(rc4k)
-                    dec = dede.decrypt(fd[:8])
-                    if self.check_header(dec):
+            if filepath.endswith(".json"):
+                fd = self.apk_object.get_file(filepath)
+                for rc4k in rc4key:
+                    if len(rc4k) > 0:
                         dede = ARC4(rc4k)
-                        dec = dede.decrypt(fd)
-                        if self.check_and_write_file(dec):
-                            self.logger.info(
-                                f"Decrypted dex is from {filepath} with key {rc4k}"
-                            )
-                            return True
+                        dec = dede.decrypt(fd[:8])
+                        if self.check_header(dec):
+                            dede = ARC4(rc4k)
+                            dec = dede.decrypt(fd)
+                            if self.check_and_write_file(dec):
+                                self.logger.info(
+                                    f"Decrypted dex is from {filepath} with key {rc4k}"
+                                )
+                                return True
         return False
 
     def get_all_rc4_keys(self, keys: list) -> set:
@@ -240,7 +269,6 @@ class LoaderRc4(Unpacker):
         return rc4_key
 
     def generate_rc4_key(self, key0, key1, without_arrange=False):
-
         big_key = key0 if len(key0) > len(key1) else key1
         smol_key = key0 if len(key0) < len(key1) else key1
         rc4_key = bytearray()

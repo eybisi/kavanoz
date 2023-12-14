@@ -39,16 +39,27 @@ class Kavanoz:
             yield p.main()
 
     def is_packed(self):
-        p = Unpacker("test", "test", apk_object=self.apk_object, dvms=self.dvms, output_dir=self.output_dir)
+        p = Unpacker(
+            "test",
+            "test",
+            apk_object=self.apk_object,
+            dvms=self.dvms,
+            output_dir=self.output_dir,
+        )
         return p.is_packed()
 
 
 @click.command()
 @click.argument("filename", type=click.Path(exists=True))
-@click.option("--output-dir", "-o", type=click.Path(exists=True), default='.', help='Output directory path')
+@click.option(
+    "--output-dir",
+    "-o",
+    type=click.Path(exists=True),
+    default=".",
+    help="Output directory path",
+)
 @click.option("-v", "--verbose", count=True)
 def cli(filename, output_dir, verbose):
-
     logging.basicConfig(handlers=[InterceptHandler()], level=0, force=True)
     logger.disable("androguard")
     logger.remove()

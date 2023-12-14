@@ -6,7 +6,9 @@ from kavanoz.utils import xor
 
 class LoaderAppsealing(Unpacker):
     def __init__(self, apk_obj: APK, dvms, output_dir):
-        super().__init__("loader.appsealing", "Appsealing unpacker", apk_obj, dvms, output_dir)
+        super().__init__(
+            "loader.appsealing", "Appsealing unpacker", apk_obj, dvms, output_dir
+        )
 
     def lazy_check(self, apk_object, dvms):
         for f in self.apk_object.get_files():

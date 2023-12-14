@@ -50,7 +50,7 @@ class LoaderSimpleXor2(Unpacker):
             "Unpacker for multiple simple unpackers",
             apk_object,
             dvms,
-            output_dir
+            output_dir,
         )
 
     def start_decrypt(self):

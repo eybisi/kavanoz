@@ -49,7 +49,11 @@ class LoaderSesdex(Unpacker):
 
     def __init__(self, apk_object, dvms, output_dir):
         super().__init__(
-            "loader.sesdex", "Unpacker for unknown adware malware", apk_object, dvms, output_dir
+            "loader.sesdex",
+            "Unpacker for unknown adware malware",
+            apk_object,
+            dvms,
+            output_dir,
         )
 
     def start_decrypt(self):

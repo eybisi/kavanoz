@@ -4,7 +4,7 @@ import logging
 import sys
 
 
-def xor(var, key):
+def xor(var: bytes, key: bytes) -> bytes:
     return bytes(a ^ b for a, b in zip(var, cycle(key)))
 
 
