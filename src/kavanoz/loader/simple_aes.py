@@ -10,7 +10,6 @@ from kavanoz.unpack_plugin import Unpacker
 from kavanoz.smali_regexes import Regexs
 from kavanoz.utils import xor
 
-
 """
 invoke-direct v2, v0, v3, Ljava/io/File;-><init>(Ljava/io/File; Ljava/lang/String;)V
 invoke-direct v7, v8, v1, v2, Lbtewtslyl/vmcdkpllfzrvt/u5a48eebb7c1d4;->a(Landroid/content/Context; Ljava/lang/String; Ljava/io/File;)Z
@@ -30,7 +29,7 @@ move-result-object v3
 
 find_aes_key = (
     r"new-instance [vp]\d+, Ljavax/crypto/CipherInputStream;\s+"
-    r"const-string [vp]\d+, '(.*)'\s+"
+    r"const-string [vp]\d+, \"(.*)\"\s+"
     r"invoke-direct [vp]\d+, [vp]\d+, L[^;]+;->[^\(]+\(Ljava/lang/String;\)Ljavax/crypto/Cipher;\s+"
     r"move-result-object [vp]\d+"
 )
@@ -69,6 +68,7 @@ class LoaderSimpleAes(Unpacker):
                         and m.get_name() == "<init>"
                     ):
                         m_smali = self.get_smali(m)
+                        
                         for fname in asset_filenames:
                             if fname in m_smali:
                                 self.logger.info("Found method")

@@ -152,7 +152,7 @@ class Unpacker:
             if c != None:
                 methods = c.get_methods()
                 for method in methods:
-                    if len(re.findall(method_name, method.get_name())) > 1:
+                    if len(re.findall(method_name.encode(), method.get_name())) > 1:
                         if descriptor == "":
                             return method
                         else:

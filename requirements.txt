@@ -1,4 +1,4 @@
-androguard==3.3.5
+androguard==3.4.0a1
 androidemu==0.0.2
 arc4==0.3.0
 androguard

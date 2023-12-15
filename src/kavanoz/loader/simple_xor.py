@@ -6,9 +6,9 @@ from kavanoz.utils import xor
 invoke-direct v10, v14, v15, Ljava/lang/Long;-><init>(J)V
 const/4 v9, 0
 array-length v13, v4
-if-ge v9, v13, +3f
+if-ge v9, v13, +03fh
 aget-byte v13, v4, v9
-const-string v14, 'pAinaTuyPSZcNjEbewHmUaUiFLzjnb'
+const-string v14, "pAinaTuyPSZcNjEbewHmUaUiFLzjnb"
 invoke-virtual v14, Ljava/lang/String;->getBytes()[B
 move-result-object v14
 invoke-virtual v10, Ljava/lang/Long;->longValue()J
@@ -24,9 +24,9 @@ aput-byte v13, v8, v9
 find_xor_key = (
     r"const/4 [vp]\d+, 0\s+"
     r"array-length [vp]\d+, [vp]\d+\s+"
-    r"if-ge [vp]\d+, [vp]\d+, \+3f\s+"
+    r"if-ge [vp]\d+, [vp]\d+, \+03fh\s+"
     r"aget-byte [vp]\d+, [vp]\d+, [vp]\d+\s+"
-    r"const-string [vp]\d+, '(.*)'\s+"
+    r"const-string [vp]\d+, \"(.*)\"\s+"
     r"invoke-virtual [vp]\d+, L[^;]+;->getBytes\(\)+\[B\s+"
     r"move-result-object [vp]\d+\s+"
     r"invoke-virtual [vp]\d+, L[^;]+;->longValue\(\)J\s+"

@@ -148,7 +148,7 @@ class LoaderMultidex(Unpacker):
                 # 0059a656: 1a00 7884               0039: const-string        v0, "恐恜恞思恕恐恛恟恟恇恁恕恑思恜恊恃恃恑恕恆恛恄思恲恃恃" # string@8478
                 # 0059a65a: 7120 b897 1000          003b: invoke-static       {v0, v1}, Lehl/vlnirvo/rwipgpued/dnhwp/fstmjrrront;->hfuojgtnouejrq(Ljava/lang/String;, I)Ljava/lang/String; # method@97b8
                 key_variable = re.findall(
-                    r"const-string(?:/jumbo)? [vp]\d+, '(.*)'\s+"
+                    r"const-string [vp]\d+, \"(.*)\"\s+"
                     f"sput-object v0, {match[0]} Ljava/lang/String;",
                     smali_str,
                 )
@@ -201,6 +201,7 @@ class LoaderMultidex(Unpacker):
 
         # Find ProxyApplication
         application = self.apk_object.get_attribute_value("application", "name")
+        target_method = None;
         if application == None:
             # Instead find class that extends Application
             for d in self.dvms:
@@ -211,22 +212,27 @@ class LoaderMultidex(Unpacker):
                         if target_method == None:
                             return None
                         break
-
+        if target_method == None:
+            return
         smali_str = self.get_smali(target_method)
 
         # const-string v0, '4743504252544340435744245230474050425254'
         # invoke-static v0, Landroid/support/dexpro/utils/DexCrypto;->ab(Ljava/lang/String;)Ljava/lang/String;
         # move-result-object v0
         # iput-object v0, v1, Lxyz/magicph/dexpro/ProxyApplication;->protectKey Ljava/lang/String
-
+        # const-string v0, "4743504252544340435744245230474050425254"
+        # invoke-static v0, Landroid/support/dexpro/utils/DexCrypto;->ab(Ljava/lang/String;)Ljava/lang/String;
+        # move-result-object v0
+        # iput-object v0, v1, Lxyz/magicph/dexpro/ProxyApplication;->protectKey Ljava/lang/String;
         # Get const string from smali_str
         key_variable = re.findall(
-            r"const-string(?:/jumbo)? [vp]\d+, '(.*)'\s+"
+            r"const-string(?:/jumbo)? [vp]\d+, \"(.*)\"\s+"
             r"invoke-static [vp]\d+, Landroid/support/dexpro/utils/DexCrypto;->[^\(]+\(Ljava/lang/String;\)Ljava/lang/String;\s+"
             r"move-result-object [vp]\d+\s+"
             r"iput-object [vp]\d+, [vp]\d+, L[^;]+;->protectKey Ljava/lang/String",
             smali_str,
         )
+        print(smali_str)
         r = set()
         if len(key_variable) == 1:
             self.logger.info(
@@ -326,10 +332,10 @@ class LoaderMultidex(Unpacker):
                         const/4 v4, 2
                         const/4 v3, 1
                         const/4 v2, 0
-                        if-eqz v7, +1d6
-                        if-eq v7, v3, +1c8
-                        if-eq v7, v4, +1bd
-                        if-eq v7, v5, +5
+                        if-eqz v7, +1d6h
+                        if-eq v7, v3, +1c8h
+                        if-eq v7, v4, +1bdh
+                        if-eq v7, v5, +005h
                         new-array v0, v2, [C
                         return-object v0
                         const/16 v0, 75
@@ -351,7 +357,7 @@ class LoaderMultidex(Unpacker):
                             r"const/16 [vp]\d+, (-?\d+)\s+"
                             r"int-to-char [vp]\d+, [vp]\d+\s+"
                             r"aput-char [vp]\d+, [vp]\d+, [vp]\d+\s+"
-                            r"goto/16 -?[a-f0-9]+\s+",
+                            r"goto/16 -?[a-f0-9]+h\s+",
                             smali_str,
                         )
                         for m in match:
@@ -426,7 +432,7 @@ class LoaderMultidex(Unpacker):
             smali_str = self.get_smali(key_clinit)
             # self.logger.info(smali_str)
             match = re.findall(
-                r"const-string [vp]\d+, '(.*)'\s+" rf"sput-object [vp]\d+, .*\s+",
+                r"const-string [vp]\d+, \"(.*)\"\s+" rf"sput-object [vp]\d+, .*\s+",
                 smali_str,
             )
             for m in match:
@@ -447,7 +453,7 @@ class LoaderMultidex(Unpacker):
             smali_str = self.get_smali(key_clinit)
             # self.logger.info(smali_str)
             match = re.findall(
-                r"const-string [vp]\d+, '(.*)'\s+"
+                r"const-string [vp]\d+, \"(.*)\"\s+"
                 rf"sput-object [vp]\d+, {variable_string} Ljava/lang/String;",
                 smali_str,
             )
@@ -457,7 +463,7 @@ class LoaderMultidex(Unpacker):
                 )
                 # If its using apkprotecttor, we can try some other method
                 match = re.findall(
-                    r"const-string(?:/jumbo)? [vp]\d+, '(.*)'\s+"
+                    r"const-string(?:/jumbo)? [vp]\d+, \"(.*)\"\s+"
                     r"invoke-static [vp]\d+, [vp]\d+, L[^;]+;->[^\(]+\(Ljava\/lang\/String; I\)Ljava\/lang\/String;\s+"
                     r"move-result-object [vp]\d+\s+"
                     rf"sput-object [vp]\d+, {variable_string} Ljava/lang/String;",
@@ -465,7 +471,7 @@ class LoaderMultidex(Unpacker):
                 )
                 if len(match) == 0:
                     match = re.findall(
-                        r"const-string(?:/jumbo)? [vp]\d+, '(.*)'\s+"
+                        r"const-string(?:/jumbo)? [vp]\d+, \"(.*)\"\s+"
                         r"invoke-static [vp]\d+, L[^;]+;->[^\(]+\(Ljava\/lang\/String;\)Ljava\/lang\/String;\s+"
                         r"move-result-object [vp]\d+\s+"
                         rf"sput-object [vp]\d+, {variable_string} Ljava/lang/String;",

@@ -21,7 +21,7 @@ invoke-virtual v8, Ljava/io/InputStream;->close()V
 
 find_xor_key = (
     r"invoke-virtual [vp]\d+, [vp]\d+, L[^;]+;->read\(\[B\)I\s+"
-    r"const-string [vp]\d+, '(.*)'\s+"
+    r"const-string [vp]\d+, \"(.*)\"\s+"
     r"invoke-virtual [vp]\d+, L[^;]+;->getBytes\(\)+\[B\s+"
     r"move-result-object [vp]\d+\s+"
     r"invoke-static [vp]\d+, [vp]\d+, L[^;]+;->([^\(]+)\(\[B \[B\)\[B\s+"
@@ -30,7 +30,7 @@ find_xor_key = (
 )
 
 find_second_xor_key = (
-    r"const-string [vp]\d+, '(.*)'\s+"
+    r"const-string [vp]\d+, \"(.*)\"\s+"
     r"invoke-virtual [vp]\d+, L[^;]+;->getBytes\(\)+\[B\s+"
     r"move-result-object [vp]\d+\s+"
     r"invoke-static [vp]\d+, [vp]\d+, L[^;]+;->([^\(]+)\(\[B \[B\)\[B\s+"
@@ -89,7 +89,7 @@ class LoaderSesdex(Unpacker):
         if len(m) == 1:
             return bytes(m[0][0].encode("utf-8"))
         else:
-            return
+            return None
 
     def find_second_xor_key(self):
         if self.decrypted_payload_path == None:
