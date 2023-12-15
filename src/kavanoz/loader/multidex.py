@@ -76,6 +76,16 @@ class LoaderMultidex(Unpacker):
             else:
                 self.logger.info("Second plan failed")
                 self.third_plan()
+        is_default = self.default_dex_protector()
+        if is_default != None:
+            for key in is_default:
+                self.logger.info(f"Trying default dex protector key {key}")
+                if self.brute_assets(key):
+                    if self.is_really_unpacked():
+                        self.logger.info("fully unpacked")
+                    else:
+                        self.logger.info("not fully unpacked")
+                    return
 
     def third_plan(self):
         """
@@ -161,6 +171,74 @@ class LoaderMultidex(Unpacker):
             self.logger.info("Something is wrong .. 🤔")
             self.logger.info("Found multiple ?? : {match}")
             return None
+
+    def default_dex_protector(self):
+        target_class = self.find_class_in_dvms(
+            "Landroid/support/dexpro/utils/DexCrypto;"
+        )
+        str_decrypt_keys = set()
+        if target_class != None:
+            self.logger.info("Found default dex protector class")
+            # Find static field with name "KEY"
+            for field in target_class.get_fields():
+                rc4_string_variable = None
+                if field.get_descriptor() != "Ljava/lang/String;":
+                    continue
+                if field.get_init_value() != None and field.get_init_value != "":
+                    self.logger.info(
+                        f"Found static key : {field.get_init_value().get_value()}"
+                    )
+                    static_rc4_string = field.get_init_value().get_value()
+                    if static_rc4_string != None:
+                        str_decrypt_keys.add(static_rc4_string)
+                else:
+                    if (
+                        "0x0" == field.get_access_flags_string()
+                        or "protected final" == field.get_access_flags_string()
+                        or "" == field.get_access_flags_string()
+                    ):
+                        rc4_string_variable = field.get_name()
+
+        # Find ProxyApplication
+        application = self.apk_object.get_attribute_value("application", "name")
+        if application == None:
+            # Instead find class that extends Application
+            for d in self.dvms:
+                for c in d.get_classes():
+                    if c.get_superclassname() == "Landroid/app/Application;":
+                        application = c.get_name()
+                        target_method = self.find_method(application, "<init>")
+                        if target_method == None:
+                            return None
+                        break
+
+        smali_str = self.get_smali(target_method)
+
+        # const-string v0, '4743504252544340435744245230474050425254'
+        # invoke-static v0, Landroid/support/dexpro/utils/DexCrypto;->ab(Ljava/lang/String;)Ljava/lang/String;
+        # move-result-object v0
+        # iput-object v0, v1, Lxyz/magicph/dexpro/ProxyApplication;->protectKey Ljava/lang/String
+
+        # Get const string from smali_str
+        key_variable = re.findall(
+            r"const-string(?:/jumbo)? [vp]\d+, '(.*)'\s+"
+            r"invoke-static [vp]\d+, Landroid/support/dexpro/utils/DexCrypto;->[^\(]+\(Ljava/lang/String;\)Ljava/lang/String;\s+"
+            r"move-result-object [vp]\d+\s+"
+            r"iput-object [vp]\d+, [vp]\d+, L[^;]+;->protectKey Ljava/lang/String",
+            smali_str,
+        )
+        r = set()
+        if len(key_variable) == 1:
+            self.logger.info(
+                f"Found key variable from zip class <clinit> {key_variable[0]}"
+            )
+            x = bytes.fromhex(key_variable[0])
+            for s in str_decrypt_keys:
+                file_dec_key = utils.xor(x, s.encode())
+                r.add(file_dec_key)
+
+        # return set of file_Dec_key
+        return r
 
     def second_plan(self):
         application = self.apk_object.get_attribute_value("application", "name")
@@ -418,7 +496,6 @@ class LoaderMultidex(Unpacker):
         return None
 
     def solve_encryption2(self, file_data, key):
-
         if len(file_data) < 8 or len(key) < 12:
             return False
 
@@ -435,7 +512,8 @@ class LoaderMultidex(Unpacker):
         iArr2 = []  # 4
         iArr3 = [None] * 27  # 27
         iArr4 = []  # 3
-        key = [ord(x) for x in key]
+        if type(key) == str:
+            key = [ord(x) for x in key]
         iArr = [key[8] | (key[9] << 16), key[11] << 16 | key[10]]
         iArr2.extend(
             [
@@ -503,7 +581,10 @@ class LoaderMultidex(Unpacker):
         decrypted_bytes = bytearray()
         indexes = [0, 0, 0, 0, 1, 1, 1, 1]
         bits = [0, 8, 16, 24]
-        c = [ord(x) for x in key]
+        if type(key) == str:
+            c = [ord(x) for x in key]
+        else:
+            c = key
         poolArr = [(c[9] << 16) | c[8], (c[11] << 16) | c[10]]
         check_0 = (poolArr[indexes[0]]) >> bits[0] & 0xFF ^ encrypted[0]
         check_1 = (poolArr[indexes[0]]) >> bits[0] & 0xFF ^ encrypted[1]
