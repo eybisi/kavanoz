@@ -2,6 +2,7 @@ from itertools import cycle
 from loguru import logger
 import logging
 import sys
+import re
 
 
 def xor(var: bytes, key: bytes) -> bytes:
@@ -36,6 +37,15 @@ zlib_headers = [
     b"\x78\xbb",
     b"\x78\xf9",
 ]
+
+
+def unescape_unicode(str):
+    codepoint = re.compile(r"(\\u[0-9a-fA-F]{4})")
+
+    def replace(match):
+        return chr(int(match.group(1)[2:], 16))
+
+    return codepoint.sub(replace, str)
 
 
 class InterceptHandler(logging.Handler):

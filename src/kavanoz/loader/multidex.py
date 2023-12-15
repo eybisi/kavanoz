@@ -4,6 +4,7 @@ from androguard.core.bytecodes.dvm import DalvikVMFormat, EncodedMethod
 import re
 import ctypes
 import string
+from kavanoz import utils
 from kavanoz.unpack_plugin import Unpacker
 
 
@@ -98,6 +99,7 @@ class LoaderMultidex(Unpacker):
                 self.logger.info(f"{_function}")
                 key = self.extract_variable_for_third_plan(_function, dvm)
                 if key is not None:
+                    key = utils.unescape_unicode(key)
                     self.logger.info(f"Found key : {key}")
                     if self.brute_assets(key):
                         if self.is_really_unpacked():
@@ -144,6 +146,7 @@ class LoaderMultidex(Unpacker):
                     self.logger.info(
                         f"Found key variable from zip class <clinit> {key_variable[0]}"
                     )
+
                     return key_variable[0]
                 else:
                     self.logger.info("Not found key variable from clinit")
@@ -179,10 +182,10 @@ class LoaderMultidex(Unpacker):
             r"invoke-static {?[vp]\d+}?, L[^;]+;->[^\(]+\(Ljava/lang/String;\)Ljava/lang/String",
             smali_str,
         )
-        # print(match)
-        # self.for_fun(match[0])
         for matched_field in match:
             key = self.find_clinit_target_variable(matched_field)
+            key = utils.unescape_unicode(key)
+
             if key != None:
                 xor_k = 0x6033
                 tmp_key = "".join(chr(xor_k ^ ord(c)) for c in key)
@@ -408,9 +411,6 @@ class LoaderMultidex(Unpacker):
     def brute_assets(self, key: str):
         asset_list = self.apk_object.get_files()
         for filepath in asset_list:
-            self.logger.info(
-                f"Starting brute-force inflate {key} for file : {filepath}"
-            )
             f = self.apk_object.get_file(filepath)
             if self.solve_encryption(f, key) or self.solve_encryption2(f, key):
                 self.logger.info("Decryption finished!!")
@@ -418,6 +418,7 @@ class LoaderMultidex(Unpacker):
         return None
 
     def solve_encryption2(self, file_data, key):
+
         if len(file_data) < 8 or len(key) < 12:
             return False
 
@@ -430,12 +431,11 @@ class LoaderMultidex(Unpacker):
         else:
             encrypted = file_data
 
-        self.logger.info(f"Start of encrypted data {encrypted[:5]} ")
         iArr = []  # 2
         iArr2 = []  # 4
         iArr3 = [None] * 27  # 27
         iArr4 = []  # 3
-        key = [ord(c) for c in key]
+        key = [ord(x) for x in key]
         iArr = [key[8] | (key[9] << 16), key[11] << 16 | key[10]]
         iArr2.extend(
             [
@@ -473,9 +473,6 @@ class LoaderMultidex(Unpacker):
                 h0 = iArr[0]
                 h1 = iArr[1]
                 for k in iArr3:
-                    if k == None:
-                        self.logger.error("k is none")
-                        return False
                     tmp0 = ((unsigned_rshift(h1, 8) | (h1 << 24) & 0xFFFFFFFF) + h0) ^ k
                     tmp1 = ((h0 << 3) & 0xFFFFFFFF | unsigned_rshift(h0, 29)) ^ tmp0
                     h0 = tmp1 & 0xFFFFFFFF
