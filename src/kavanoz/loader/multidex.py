@@ -232,7 +232,6 @@ class LoaderMultidex(Unpacker):
             r"iput-object [vp]\d+, [vp]\d+, L[^;]+;->protectKey Ljava/lang/String",
             smali_str,
         )
-        print(smali_str)
         r = set()
         if len(key_variable) == 1:
             self.logger.info(
