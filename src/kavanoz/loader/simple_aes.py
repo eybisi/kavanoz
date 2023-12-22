@@ -68,12 +68,14 @@ class LoaderSimpleAes(Unpacker):
                         and m.get_name() == "<init>"
                     ):
                         m_smali = self.get_smali(m)
-                        
+
                         for fname in asset_filenames:
                             if fname in m_smali:
                                 self.logger.info("Found method")
                                 target_method = m
                                 m = re.findall(find_aes_function, m_smali)
+                                if len(m) == 0:
+                                    continue
                                 klass, method = m[0].split("->")
                                 target_method = self.find_method(
                                     klass,
