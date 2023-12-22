@@ -45,6 +45,7 @@ class LoaderCoper(Unpacker):
             self.logger.info("Trying to find strings in stack")
         # self.emulator.mu.hook_add(UC_HOOK_CODE, self.hook_debug_print)
         self.emulator.mu.hook_add(UC_HOOK_MEM_READ_UNMAPPED, self.hook_unmapped_read)
+
         try:
             self.emulator.call_symbol(self.target_module, self.target_function.name)
         except Exception as e:
@@ -53,13 +54,14 @@ class LoaderCoper(Unpacker):
                 self.logger.info("No strings found")
                 return
         self.logger.info(f"Androidemu extracted rc4 key: {self.resolved_strings[0]}")
-        self.decrypt_files(self.resolved_strings[0])
+        if self.decrypt_files(self.resolved_strings[0]):
+            self.logger.info("Decryption successfull")
         os.remove(fname)
 
     def decrypt_files(self, rc4key: str):
         for filepath in self.apk_object.get_files():
             fd = self.apk_object.get_file(filepath)
-            dede = ARC4(rc4key)
+            dede = ARC4(rc4key.encode("utf-8"))
             dec = dede.decrypt(fd)
             if self.check_and_write_file(dec):
                 return True
@@ -96,9 +98,21 @@ class LoaderCoper(Unpacker):
 
     def hook_unmapped_read(self, uc, access, address, size, value, user_data):
         # Read stack and print it byte per byte
+        self.logger.debug("Trying to read from address : %x" % address)
         sp = uc.reg_read(UC_ARM_REG_SP)
-        print(f"\nStack pointer: {hex(sp)}")
-        stack_data = uc.mem_read(sp, 0x400)
+        bp = uc.reg_read(UC_ARM_REG_R11)
+        self.logger.debug(f"Stack pointer: {hex(sp)} \n Base pointer: {hex(bp)}")
+
+        # Problem here is we don't know the size of the stack data
+        # If we read too much we will get unmapped memory error
+        # But we can extract stack size from function prologue
+
+        stack_size = self.extract_stack_size_from_function_prologue(
+            self.emulator.mu, self.target_function, self.target_lib_base
+        )
+        if stack_size == 0:
+            return
+        stack_data = uc.mem_read(sp, stack_size)
         # Stack data contains list of strings ends with \x00 but there are also
         # filler \x00 bytes in between them. We need to split them.
         stack_data = stack_data.split(b"\x00")
@@ -106,7 +120,7 @@ class LoaderCoper(Unpacker):
         stack_data = [x for x in stack_data if x != b""]
         # Decode strings
         stack_data = [x for x in stack_data]
-        print(f"Stack data: {stack_data}")
+        self.logger.debug(f"Stack data: {stack_data}")
         self.resolved_strings.append(stack_data[-1].decode("utf-8"))
         # Print stack
 
@@ -114,6 +128,7 @@ class LoaderCoper(Unpacker):
         for module in self.emulator.modules:
             if module.filename == self.target_lib:
                 self.logger.info("[0x%x] %s" % (module.base, module.filename))
+                self.target_lib_base = module.base
                 # emulator.mu.hook_add(
                 # UC_HOOK_CODE,
                 # hook_code,
@@ -134,6 +149,7 @@ class LoaderCoper(Unpacker):
                 self.emulator.mu.hook_add(UC_HOOK_MEM_UNMAPPED, self.hook_mem_read)
                 self.emulator.mu.hook_add(UC_HOOK_MEM_READ_UNMAPPED, self.hook_mem_read)
                 return True
+        return False
 
     def hook_mem_read(self, uc, access, address, size, value, user_data):
         pc = uc.reg_read(UC_ARM_REG_PC)
@@ -158,6 +174,29 @@ class LoaderCoper(Unpacker):
             self.resolved_strings.append(final_str)
             if len(self.resolved_strings) > 10:
                 self.emulator.mu.emu_stop()
+
+    def extract_stack_size_from_function_prologue(
+        self, uc, target_function, target_lib_base
+    ) -> int:
+        # 00001ee8  f0b5       push    {r4, r5, r6, r7, lr} {var_4} {__saved_r7} {__saved_r6} {__saved_r5} {__saved_r4}
+        # 00001eea  03af       add     r7, sp, #0xc {__saved_r7}
+        # 00001eec  2de9000f   push    {r8, r9, r10, r11} {__saved_r11} {__saved_r10} {__saved_r9} {__saved_r8}
+        # 00001ef0  adf2144d   subw    sp, sp, #0x414
+
+        # We need 4th instruction, if its sub/subw with parameters sp,sp then get the value
+        # of the last parameter
+        # F it just read bytes
+        # -1 is for thumb mode
+        should_be_subw = uc.mem_read(
+            target_lib_base + target_function.value - 1 + 8, 0x4
+        )
+        if should_be_subw[0] != 0xAD:
+            return 0
+        # adf2144d -> read 0x14 and 0x4d bytes -> convert it to 0x414
+
+        stack_size = should_be_subw[2] | (((should_be_subw[3] & 0xF0) >> 4) << 8)
+        self.logger.info(f"Stack size must be {hex(stack_size)}")
+        return stack_size
 
     # def hook_code(self,uc: unicorn.unicorn.Uc, address, size, user_data):
     # global rc4_key
