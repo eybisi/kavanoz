@@ -46,6 +46,7 @@ class LoaderMultidex(Unpacker):
                         self.ProtectKey = child.attrib[
                             "{http://schemas.android.com/apk/res/android}value"
                         ]
+                        self.logger.info(f"Found protect key {self.ProtectKey}")
             if self.ProtectKey != None:
                 if self.find_decrypt_protect_arrays():
                     self.logger.info("Found key in manifest/xor")
@@ -201,7 +202,7 @@ class LoaderMultidex(Unpacker):
 
         # Find ProxyApplication
         application = self.apk_object.get_attribute_value("application", "name")
-        target_method = None;
+        target_method = None
         if application == None:
             # Instead find class that extends Application
             for d in self.dvms:
@@ -323,7 +324,7 @@ class LoaderMultidex(Unpacker):
             for c in d.get_classes():
                 for m in c.get_methods():
                     if m.get_descriptor() == "(I)[C":
-                        self.logger.info("Found decrypt protect arrays method")
+                        self.logger.info(f"Found decrypt protect arrays method {m.get_name()}")
                         smali_str = self.get_smali(m)
                         """
                         const/16 v6, 11
@@ -370,11 +371,41 @@ class LoaderMultidex(Unpacker):
                                     chr(xor_k ^ ord(c)) for c in self.ProtectKey
                                 )
                                 if self.brute_assets(tmp_key):
+                                    self.logger.info("Decrypted from manifest")
                                     return True
                             else:
                                 self.logger.info("no protect key found in manifest..")
                         else:
-                            self.logger.info("Could not find with key size of 1")
+
+                            # new-array v0, v0, [C
+                            # const/16 v1, 24627
+                            # aput-char v1, v0, v2
+                            # goto -fh
+                            # Or we can extract data from fill-array-data
+                            match = re.findall(
+                                r"new-array [vp]\d+, [vp]\d+, \[C\s+"
+                                r"const/16 [vp]\d+, (-?\d+)\s+"
+                                r"aput-char [vp]\d+, [vp]\d+, [vp]\d+\s+"
+                                r"goto -?[a-f0-9]+h\s+",
+                                smali_str,
+                            )
+                            for m in match:
+                                try:
+                                    xor_k = int(m)
+                                    print(xor_k)
+                                except:
+                                    self.logger.info("bad match", m)
+                                    continue
+                                if self.ProtectKey != None:
+                                    tmp_key = "".join(
+                                        chr(xor_k ^ ord(c)) for c in self.ProtectKey
+                                    )
+                                    if self.brute_assets(tmp_key):
+                                        self.logger.info("Decrypted from manifest")
+                                        return True
+                                else:
+                                    self.logger.info("no protect key found in manifest..")           
+                            return False
 
     def extract_variable_from_zip(self, target_method: EncodedMethod, dvm):
         smali_str = self.get_smali(target_method)
