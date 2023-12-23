@@ -1,6 +1,6 @@
-from androguard.core.bytecodes.apk import APK
+from androguard.core.apk import APK
 import zlib
-from androguard.core.bytecodes.dvm import DalvikVMFormat, EncodedMethod
+from androguard.core.dex import DEX, EncodedMethod
 import re
 import ctypes
 import string

@@ -1,4 +1,4 @@
-from androguard.core.bytecodes.apk import APK
+from androguard.core.apk import APK
 from kavanoz.unpack_plugin import Unpacker
 from Crypto.Cipher import AES
 from kavanoz.unpack_plugin import Unpacker
@@ -64,7 +64,7 @@ class LoaderKangaPack(Unpacker):
                     return True
         return False
 
-    def lazy_check(self, apk_object: APK, dvms: "list[DalvikVMFormat]") -> bool:
+    def lazy_check(self, apk_object: APK, dvms: "list[DEX]") -> bool:
         dex_bytes = apk_object.get_dex()
         if len(dex_bytes) > 0:
             try:
