@@ -1,6 +1,6 @@
-from androguard.core.bytecodes.apk import APK
+from androguard.core.apk import APK
 import re
-from androguard.core.bytecodes.dvm import DalvikVMFormat, EncodedMethod, ClassDefItem
+from androguard.core.dex import DEX, EncodedMethod, ClassDefItem
 import time
 import io
 import zipfile
@@ -20,7 +20,7 @@ class Unpacker:
         tag: str,
         name: str,
         apk_object: APK,
-        dvms: list[DalvikVMFormat],
+        dvms: list[DEX],
         output_dir,
     ):
         """Default unpacking plugin"""
@@ -80,7 +80,7 @@ class Unpacker:
             return False
         # add last dvm
         with open(self.decrypted_payload_path, "rb") as fp:
-            self.dvms.append(DalvikVMFormat(fp.read()))
+            self.dvms.append(DEX(fp.read()))
         return not self.is_packed()
 
     def get_tag(self) -> str:
@@ -177,7 +177,7 @@ class Unpacker:
                 return method
         return None
 
-    def lazy_check(self, apk_object: APK, dvms: "list[DalvikVMFormat]") -> bool:
+    def lazy_check(self, apk_object: APK, dvms: "list[DEX]") -> bool:
         """Check if this plugin should run. This method shouldn't be heavy."""
         return True
 

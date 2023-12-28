@@ -1,7 +1,7 @@
 from datetime import datetime
-from androguard.core.bytecodes.apk import APK
+from androguard.core.apk import APK
 from arc4 import ARC4
-from androguard.core.bytecodes.dvm import DalvikVMFormat
+from androguard.core.dex import DEX
 import re
 from itertools import combinations
 from kavanoz.unpack_plugin import Unpacker

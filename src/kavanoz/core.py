@@ -1,5 +1,5 @@
-from androguard.core.bytecodes.apk import APK
-from androguard.core.bytecodes.dvm import DalvikVMFormat
+from androguard.core.apk import APK
+from androguard.core.dex import DEX
 from kavanoz.unpack_plugin import Unpacker
 from kavanoz import plugin_loader
 from kavanoz.utils import InterceptHandler
@@ -29,7 +29,7 @@ class Kavanoz:
         e = time.time()
         logger.info(f"Androguard took : {e-s} seconds")
         s = time.time()
-        self.dvms = [DalvikVMFormat(dex) for dex in self.apk_object.get_all_dex()]
+        self.dvms = [DEX(dex) for dex in self.apk_object.get_all_dex()]
         e = time.time()
         logger.info(f"Androguard dvm took : {e-s} seconds")
 

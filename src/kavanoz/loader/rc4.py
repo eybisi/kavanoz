@@ -1,7 +1,7 @@
 from datetime import datetime
-from androguard.core.bytecodes.apk import APK
+from androguard.core.apk import APK
 from arc4 import ARC4
-from androguard.core.bytecodes.dvm import DalvikVMFormat
+from androguard.core.dex import DEX
 import re
 from itertools import combinations
 from kavanoz.unpack_plugin import Unpacker
@@ -99,13 +99,13 @@ class LoaderRc4(Unpacker):
                 return
             return self.find_rc4_keys_from_klass_fields(klass)
 
-    def find_all_strings(self, dvm: DalvikVMFormat) -> set:
+    def find_all_strings(self, dvm: DEX) -> set:
         all_rc4_keys = set()
         for klass in dvm.get_classes():
             all_rc4_keys.update(self.find_rc4_keys_from_klass_fields(klass))
         return all_rc4_keys
 
-    def find_all_strings_from_application_class(self, dvm: DalvikVMFormat) -> set:
+    def find_all_strings_from_application_class(self, dvm: DEX) -> set:
         application = self.apk_object.get_attribute_value("application", "name")
         if application == None:
             return None

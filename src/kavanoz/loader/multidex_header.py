@@ -1,5 +1,5 @@
-from androguard.core.bytecodes.apk import APK
-from androguard.core.bytecodes.dvm import DalvikVMFormat
+from androguard.core.apk import APK
+from androguard.core.dex import DEX
 from kavanoz.unpack_plugin import Unpacker
 import struct
 

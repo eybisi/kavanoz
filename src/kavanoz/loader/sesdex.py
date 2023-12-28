@@ -1,7 +1,7 @@
 from datetime import datetime
-from androguard.core.bytecodes.apk import APK
+from androguard.core.apk import APK
 from arc4 import ARC4
-from androguard.core.bytecodes.dvm import DalvikVMFormat
+from androguard.core.dex import DEX
 import re
 from itertools import combinations
 from kavanoz.unpack_plugin import Unpacker
@@ -96,7 +96,7 @@ class LoaderSesdex(Unpacker):
             return
         with open(self.decrypted_payload_path, "rb") as fp:
             d = fp.read()
-            dvm = DalvikVMFormat(d)
+            dvm = DEX(d)
             for c in dvm.get_classes():
                 if c.get_superclassname() == "Landroid/app/Application;":
                     for m in c.get_methods():

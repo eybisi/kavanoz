@@ -1,4 +1,4 @@
-from androguard.core.bytecodes.apk import APK
+from androguard.core.apk import APK
 from kavanoz.unpack_plugin import Unpacker
 from kavanoz.utils import xor
 
