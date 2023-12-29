@@ -210,10 +210,14 @@ class LoaderMultidex(Unpacker):
                     if c.get_superclassname() == "Landroid/app/Application;":
                         application = c.get_name()
                         target_method = self.find_method(application, "<init>")
-                        if target_method == None:
-                            return None
                         break
+        else:
+            application_smali = "L" + application.replace(".", "/") + ";"
+            target_method = self.find_method(application_smali, "<init>")
+            self.logger.info(f"Found application class : {application} target_method : {target_method}")
+
         if target_method == None:
+            self.logger.info("Unable to find target_method class")
             return
         smali_str = self.get_smali(target_method)
 
