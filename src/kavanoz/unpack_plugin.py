@@ -69,9 +69,23 @@ class Unpacker:
         if len(act_serv_recv) == 0:
             return False
         score = not_found_counter / len(act_serv_recv)
+        self.logger.info(f"Packed : Score : {score}")
         if score > 0.80:
-            self.logger.info(f"Packed : Score : {score}")
             ispacked = True
+        else:
+            # Lets check if MainActivity is present
+            res = self.apk_object.get_main_activity()
+            if res:
+                for dex in self.dvms:
+                    try:
+                        dex_classes = dex.get_classes_names()
+                    except Exception as e:
+                        continue
+                    clas_name = "L" + res.replace(".", "/") + ";"
+                    if clas_name in dex_classes:
+                        break
+                else:
+                    ispacked = True
         return ispacked
 
     def is_really_unpacked(self) -> bool:
