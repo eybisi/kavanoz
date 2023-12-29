@@ -80,7 +80,6 @@ def cli(filename, output_dir, verbose):
     spinner = Halo(text="Extracting apk/dex information", spinner="star")
     spinner.start()
     k = Kavanoz(filename, output_dir=output_dir)
-    logger.warning("This is a warning")
     spinner.stop()
     spinner.start()
     if not k.is_packed():

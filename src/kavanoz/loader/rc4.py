@@ -48,7 +48,7 @@ class LoaderRc4(Unpacker):
             all_possible_rc4_keys = list(
                 filter(
                     lambda x: x != None,
-                    self.find_all_strings_from_application_class(self.dexes[-1]),
+                    self.find_all_strings(self.dexes[-1]),
                 )
             )
             if self.decrypt_files(all_possible_rc4_keys):
@@ -94,7 +94,8 @@ class LoaderRc4(Unpacker):
     def find_all_strings(self, dvm: DEX) -> set:
         all_rc4_keys = set()
         for klass in dvm.get_classes():
-            all_rc4_keys.update(self.find_rc4_keys_from_klass_fields(klass))
+            # all_rc4_keys.update(self.find_rc4_keys_from_klass_fields(klass))
+            all_rc4_keys.update(self.find_rc4_keys_from_static_methods(klass))
         return all_rc4_keys
 
     def find_all_strings_from_application_class(self, dvm: DEX) -> set:
@@ -103,6 +104,16 @@ class LoaderRc4(Unpacker):
         all_rc4_keys = set()
         all_rc4_keys.update(self.find_rc4_keys_from_klass_fields(klass))
         return all_rc4_keys
+
+    def find_rc4_keys_from_static_methods(self, klass) -> set:
+        all_possible_rc4_keys = set()
+        for method in klass.get_methods():
+            if "static" in method.get_access_flags_string() and "Ljava/lang/String;" in method.get_descriptor():
+                res = self.generate_rc4_keys_from_method(method)
+                if len(res) > 0:
+                    all_possible_rc4_keys.update(res)
+        return all_possible_rc4_keys
+
 
     def find_rc4_keys_from_klass_fields(self, klass) -> set:
         all_possible_rc4_keys = set()
