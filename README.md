@@ -54,12 +54,12 @@ Do not use cryptodome for rc4 decryption. It does not work with 2-4 key size.
 
 To add new plugins just create new file in loader folder. Extend Unpacker class from unpack_plugin.py file. Define start_decrypt function with your implementation. 
 ```py
-def start_decrypt(self, apk_object: APK, dvms: "list[DalvikVMFormat]"):
+def start_decrypt(self, apk_object: APK, dexes: "list[DEX]"):
 ```
 
 Add following function to make early exit from plugin. 
 ```py
-def lazy_check(self,apk_object:APK, dvms: "list[DalvikVMFormat]"):
+def lazy_check(self,apk_object:APK, dexes: "list[DEX]"):
 ```
 
 If extraction is succesful assign self.decrypted_payload_path with extracted file path.
@@ -71,7 +71,7 @@ You can use helper functions from unpacker class:
 
 ### :book: Tips
 
-- self.dvms hold dex dvm objects. You can get class with `dvm.get_class(smali_annotation_of_class)`.
+- self.dexes hold dex objects. You can get class with `dex.get_class(smali_annotation_of_class)`.
 - You can use get_smali function and give target method obj to get smali represantation of target method. Then apply some regex to get data from smali. There are lots of defined regexs in [smali_regexes.py](smali_regexes.py) file to lookup. 
 - Most of the time packers use file from asset folder. You can get files with `self.apk_object.get_files()` 
 - Most of the time packers use Application class to start unpacking sequence. Use `application = self.apk_object.get_attribute_value("application", "name")` to get application class defined in manifest file. 
