@@ -50,9 +50,6 @@ for plugin_result in k.get_plugin_results():
 - [simple_xor_zlib.py](src/kavanoz/loader/simple_xor_zlib.py)
 - [subapp.py](src/kavanoz/loader/subapp.py) Decrypt asset with package name
 
-####  Note
-
-Do not use cryptodome for rc4 decryption. It does not work with 2-4 key size.
 
 ### :gear: Development
 
