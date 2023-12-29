@@ -1,9 +1,10 @@
 # 🫙 kavanoz 🫙
 ![](https://img.shields.io/github/license/eybisi/kavanoz)
 ![](https://img.shields.io/github/stars/eybisi/kavanoz)
+![](https://img.shields.io/github/issues-closed/eybisi/kavanoz.svg)
+![](https://img.shields.io/github/issues-pr-closed/eybisi/kavanoz.svg)
 
 Statically unpacking common android banker malware.
-
 Ever wanted to get payload from packed malware without running android emulator ? Me neither.
 
 ![](assets/unpack.gif)
