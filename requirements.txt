@@ -1,4 +1,5 @@
-androguard
+androguard==4.0.1
+apkInspector>=1.2.1
 androidemu==0.0.2
 arc4==0.3.0
 androguard
