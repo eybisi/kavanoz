@@ -101,6 +101,15 @@ class TestAllLoaders(unittest.TestCase):
         if rc4.decrypted_payload_path:
             os.remove(rc4.decrypted_payload_path)
 
+        filename = os.path.join(os.path.dirname(__file__), "./test_apk/default_dex_protector.apk")
+        apk_object = APK(filename)
+        dvms = [DEX(dex) for dex in apk_object.get_all_dex()]
+        rc4 = LoaderMultidex(apk_object, dvms, output_dir=None)
+        res = rc4.main()
+        assert res["status"] == "success"
+        if rc4.decrypted_payload_path:
+            os.remove(rc4.decrypted_payload_path)
+
     def test_inflate_second(self):
         """
         Test that it can sum a list of integers
