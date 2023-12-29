@@ -48,7 +48,7 @@ class LoaderRc4(Unpacker):
             all_possible_rc4_keys = list(
                 filter(
                     lambda x: x != None,
-                    self.find_all_strings_from_application_class(self.dvms[-1]),
+                    self.find_all_strings_from_application_class(self.dexes[-1]),
                 )
             )
             if self.decrypt_files(all_possible_rc4_keys):

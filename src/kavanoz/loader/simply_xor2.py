@@ -66,7 +66,7 @@ class LoaderSimpleXor2(Unpacker):
             for x in self.apk_object.get_files()
             if x.startswith("assets/")
         ]
-        for d in self.dvms:
+        for d in self.dexes:
             for c in d.get_classes():
                 for m in c.get_methods():
                     if (

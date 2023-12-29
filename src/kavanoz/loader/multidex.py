@@ -21,12 +21,12 @@ def unsigned_lshift(val, n):
 class LoaderMultidex(Unpacker):
     ProtectKey = ""
 
-    def __init__(self, apk_obj, dvms, output_dir):
+    def __init__(self, apk_obj, dexes, output_dir):
         super().__init__(
             "loader.multidex",
             "Unpacker for multidex variants",
             apk_obj,
-            dvms,
+            dexes,
             output_dir,
         )
 
@@ -282,7 +282,7 @@ class LoaderMultidex(Unpacker):
 
     def find_zip_function(self):
         target_method = None
-        for d in self.dvms:
+        for d in self.dexes:
             for c in d.get_classes():
                 for m in c.get_methods():
                     if (
@@ -297,7 +297,7 @@ class LoaderMultidex(Unpacker):
     def find_input_output_stream(self):
         target_method = None
         target_method_and_dvms = []
-        for d in self.dvms:
+        for d in self.dexes:
             for c in d.get_classes():
                 for m in c.get_methods():
                     if (
@@ -312,7 +312,7 @@ class LoaderMultidex(Unpacker):
         return target_method_and_dvms
 
     def find_decrypt_protect_arrays(self):
-        for d in self.dvms:
+        for d in self.dexes:
             for c in d.get_classes():
                 for m in c.get_methods():
                     if m.get_descriptor() == "(I)[C":

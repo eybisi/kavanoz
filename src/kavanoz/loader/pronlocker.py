@@ -18,9 +18,9 @@ byte_array_function = (
 class LoaderPr0nLocker(Unpacker):
     decrypted_payload_path = None
 
-    def __init__(self, apk_object, dvms, output_dir):
+    def __init__(self, apk_object, dexes, output_dir):
         super().__init__(
-            "loader.pr0nlocker", "Unpacker for pr0nlocker", apk_object, dvms, output_dir
+            "loader.pr0nlocker", "Unpacker for pr0nlocker", apk_object, dexes, output_dir
         )
 
     def start_decrypt(self):
@@ -39,7 +39,7 @@ class LoaderPr0nLocker(Unpacker):
 
         found_str_decryptor = False
         str_decryptor_class = None
-        for d in self.dvms:
+        for d in self.dexes:
             for c in d.get_classes():
                 for m in c.get_methods():
                     if (

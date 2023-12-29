@@ -20,7 +20,7 @@ class Unpacker:
         tag: str,
         name: str,
         apk_object: APK,
-        dvms: list[DEX],
+        dexes: list[DEX],
         output_dir,
     ):
         """Default unpacking plugin"""
@@ -29,7 +29,7 @@ class Unpacker:
         self.decrypted_payload_path = None
         self.logger = logger
         self.apk_object = apk_object
-        self.dvms = list(filter(self.filter_dvms, dvms))
+        self.dexes = list(filter(self.filter_dvms, dexes))
         if output_dir:
             self.output_dir = output_dir
         else:
@@ -56,7 +56,7 @@ class Unpacker:
         )
         for component in act_serv_recv:
             if component:
-                for dex in self.dvms:
+                for dex in self.dexes:
                     try:
                         dex_classes = dex.get_classes_names()
                     except Exception as e:
@@ -76,7 +76,7 @@ class Unpacker:
             # Lets check if MainActivity is present
             res = self.apk_object.get_main_activity()
             if res:
-                for dex in self.dvms:
+                for dex in self.dexes:
                     try:
                         dex_classes = dex.get_classes_names()
                     except Exception as e:
@@ -94,7 +94,7 @@ class Unpacker:
             return False
         # add last dvm
         with open(self.decrypted_payload_path, "rb") as fp:
-            self.dvms.append(DEX(fp.read()))
+            self.dexes.append(DEX(fp.read()))
         return not self.is_packed()
 
     def get_tag(self) -> str:
@@ -153,7 +153,7 @@ class Unpacker:
         application_smali = None
         application = self.apk_object.get_attribute_value("application", "name")
         if application == None:
-            for d in self.dvms:
+            for d in self.dexes:
                 for c in d.get_classes():
                     if c.get_superclassname() == "Landroid/app/Application;":
                         application_smali = c.get_name()
@@ -169,7 +169,7 @@ class Unpacker:
         Find method in dvms via class name and method name. Descriptor is optional
         :returns EncodedMethod of found method
         """
-        for dvm in self.dvms:
+        for dvm in self.dexes:
             c = dvm.get_class(klass_name)
             if c != None:
                 methods = c.get_methods()
@@ -185,7 +185,7 @@ class Unpacker:
     def find_method_re(
         self, klass_name: str, method_name: str, descriptor: str = ""
     ) -> EncodedMethod:
-        for dvm in self.dvms:
+        for dvm in self.dexes:
             c = dvm.get_class(klass_name)
             if c != None:
                 methods = c.get_methods()
@@ -200,7 +200,7 @@ class Unpacker:
 
     def find_class_in_dvms(self, klass_name: str) -> ClassDefItem:
         """Search class name in dvms and return first instance"""
-        for dvm in self.dvms:
+        for dvm in self.dexes:
             c = dvm.get_class(klass_name)
             if c != None:
                 return c
@@ -291,7 +291,7 @@ class Unpacker:
         result = {}
         result["name"] = self.get_name()
         result["tag"] = self.get_tag()
-        if not self.lazy_check(self.apk_object, self.dvms):
+        if not self.lazy_check(self.apk_object, self.dexes):
             result["status"] = "success" if self.get_status() else "fail"
             return result
         # try:
