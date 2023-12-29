@@ -8,20 +8,10 @@ Ever wanted to get payload from packed malware without running android emulator 
 
 ![](assets/unpack.gif)
 
-### Requirements
-- python >= 3.9 
-- arc4
-- androguard
-- lief
-- unicorn
-- androidemu
-- pycryptodome
-
-
 ### :eyes: Installation
 
 ```
-pip install -e . --user
+pip install kavanoz
 ```
 
 ### :zap: Usage
