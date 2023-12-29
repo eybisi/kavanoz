@@ -113,7 +113,13 @@ class Unpacker:
         """
         smali_str = ""
         for ins in target_method.get_instructions():
-            smali_str += f"{ins.get_name()} {ins.get_output()}\n"
+            smali_str += f"{ins.get_name()} "
+            # TODO: androguard bug, will be removed after new release published
+            if ins.get_name() == "const-string":
+                replaced_const_string = ins.get_output().replace('\"\'', "\"").replace('\'\"', "\"")
+                smali_str += replaced_const_string +"\n"
+            else:
+                smali_str += f"{ins.get_output()}\n"
         return smali_str
 
     @staticmethod
