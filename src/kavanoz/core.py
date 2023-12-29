@@ -69,7 +69,6 @@ def cli(filename, output_dir, verbose):
     spinner.start()
     k = Kavanoz(filename, output_dir=output_dir)
     spinner.stop()
-    spinner.text = f"Plugin {k.plugins[0]} is running"
     spinner.start()
     if not k.is_packed():
         spinner.warn("Sample is not packed")
