@@ -138,6 +138,24 @@ class Unpacker:
                 barrays.append(barray)
         return barrays
 
+    def find_main_application(self) -> str:
+        """
+        Find main application class name from AndroidManifest.xml
+        If application tag is not present, find first class that extends Application
+        :returns application_smali: Application class name in smali format
+        """
+        application_smali = None
+        application = self.apk_object.get_attribute_value("application", "name")
+        if application == None:
+            for d in self.dvms:
+                for c in d.get_classes():
+                    if c.get_superclassname() == "Landroid/app/Application;":
+                        application_smali = c.get_name()
+                        break
+        else:
+            application_smali = "L" + application.replace(".", "/") + ";"
+        return application_smali
+
     def find_method(
         self, klass_name: str, method_name: str, descriptor: str = ""
     ) -> EncodedMethod:

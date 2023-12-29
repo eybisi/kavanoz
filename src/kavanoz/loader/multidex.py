@@ -201,21 +201,12 @@ class LoaderMultidex(Unpacker):
                         rc4_string_variable = field.get_name()
 
         # Find ProxyApplication
-        application = self.apk_object.get_attribute_value("application", "name")
-        target_method = None
-        if application == None:
-            # Instead find class that extends Application
-            for d in self.dvms:
-                for c in d.get_classes():
-                    if c.get_superclassname() == "Landroid/app/Application;":
-                        application = c.get_name()
-                        target_method = self.find_method(application, "<init>")
-                        break
-        else:
-            application_smali = "L" + application.replace(".", "/") + ";"
-            target_method = self.find_method(application_smali, "<init>")
-            self.logger.info(f"Found application class : {application} target_method : {target_method}")
-
+        # application = self.apk_object.get_attribute_value("application", "name")
+        application_smali = self.find_main_application()
+        target_method = self.find_method(application_smali, "<init>")
+        self.logger.info(
+            f"Found application class : {application_smali} target_method : {target_method}"
+        )
         if target_method == None:
             self.logger.info("Unable to find target_method class")
             return
@@ -251,12 +242,9 @@ class LoaderMultidex(Unpacker):
         return r
 
     def second_plan(self):
-        application = self.apk_object.get_attribute_value("application", "name")
-        if application == None:
-            return None
-
-        application_smali = "L" + application.replace(".", "/") + ";"
+        application_smali = self.find_main_application()
         target_method = self.find_method(application_smali, "<init>")
+
         if target_method == None:
             return None
         smali_str = self.get_smali(target_method)
@@ -328,7 +316,9 @@ class LoaderMultidex(Unpacker):
             for c in d.get_classes():
                 for m in c.get_methods():
                     if m.get_descriptor() == "(I)[C":
-                        self.logger.info(f"Found decrypt protect arrays method {m.get_name()}")
+                        self.logger.info(
+                            f"Found decrypt protect arrays method {m.get_name()}"
+                        )
                         smali_str = self.get_smali(m)
                         """
                         const/16 v6, 11
@@ -380,7 +370,6 @@ class LoaderMultidex(Unpacker):
                             else:
                                 self.logger.info("no protect key found in manifest..")
                         else:
-
                             # new-array v0, v0, [C
                             # const/16 v1, 24627
                             # aput-char v1, v0, v2
@@ -408,7 +397,9 @@ class LoaderMultidex(Unpacker):
                                         self.logger.info("Decrypted from manifest")
                                         return True
                                 else:
-                                    self.logger.info("no protect key found in manifest..")           
+                                    self.logger.info(
+                                        "no protect key found in manifest.."
+                                    )
                             return False
 
     def extract_variable_from_zip(self, target_method: EncodedMethod, dvm):

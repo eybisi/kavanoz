@@ -59,20 +59,12 @@ class LoaderRc4(Unpacker):
             return True
 
     def find_attach_class(self):
-        application = self.apk_object.get_attribute_value("application", "name")
-        if application == None:
-            return None
-        # self.logger.info(f"application android:name = {application}")
-        application_smali = "L" + application.replace(".", "/") + ";"
+        application_smali = self.find_main_application()
         target_method = self.find_method(application_smali, "attachBaseContext")
         return target_method
 
     def find_application_init(self):
-        application = self.apk_object.get_attribute_value("application", "name")
-        if application == None:
-            return None
-        # self.logger.info(f"application android:name = {application}")
-        application_smali = "L" + application.replace(".", "/") + ";"
+        application_smali = self.find_main_application()
         target_method = self.find_method(application_smali, "<init>")
         return target_method
 
@@ -106,10 +98,7 @@ class LoaderRc4(Unpacker):
         return all_rc4_keys
 
     def find_all_strings_from_application_class(self, dvm: DEX) -> set:
-        application = self.apk_object.get_attribute_value("application", "name")
-        if application == None:
-            return None
-        application_smali = "L" + application.replace(".", "/") + ";"
+        application_smali = self.find_main_application()
         klass = self.find_class_in_dvms(application_smali)
         all_rc4_keys = set()
         all_rc4_keys.update(self.find_rc4_keys_from_klass_fields(klass))

@@ -70,11 +70,7 @@ class LoaderOldRc4(Unpacker):
         return []
 
     def find_application_oncreate(self):
-        application = self.apk_object.get_attribute_value("application", "name")
-        if application == None:
-            return None
-        # self.logger.info(f"application android:name = {application}")
-        application_smali = "L" + application.replace(".", "/") + ";"
+        application_smali = self.find_main_application()
         return self.find_method(application_smali, "onCreate")
 
     def find_caller_rc4_init(self, target_method):

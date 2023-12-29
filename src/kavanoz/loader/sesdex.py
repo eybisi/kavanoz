@@ -72,11 +72,7 @@ class LoaderSesdex(Unpacker):
                 self.decrypt_files(second_xor_key)
 
     def find_xor_key(self):
-        application = self.apk_object.get_attribute_value("application", "name")
-        if application == None:
-            return None
-        # self.logger.info(f"application android:name = {application}")
-        application_smali = "L" + application.replace(".", "/") + ";"
+        application_smali = self.find_main_application()
         target_method = self.find_method_re(
             application_smali, ".*", "(Ljava/io/InputStream;)Ljava/io/File;"
         )
