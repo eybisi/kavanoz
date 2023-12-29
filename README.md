@@ -24,11 +24,15 @@ kavanoz /tmp/filepath
 from python library
 ```py
 from kavanoz.core import Kavanoz
-k = Kavanoz(apk_path)
+from kavanoz import utils
+
+utils.set_log("DEBUG")
+k = Kavanoz(apk_path="tests/test_apk/coper.apk")
 for plugin_result in k.get_plugin_results():
-    if plugin_result['status'] = 'success':
-        print('Unpacked')
+    if plugin_result["status"] == "success":
+        print("Unpacked")
         print(plugin_result)
+        break
 ```
 
 ### :snake: Scripts:

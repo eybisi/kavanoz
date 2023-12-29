@@ -1,7 +1,8 @@
 from androguard.core.apk import APK
 from androguard.core.dex import DEX
+from androguard import util
 from kavanoz.unpack_plugin import Unpacker
-from kavanoz import plugin_loader
+from kavanoz import plugin_loader, utils
 from kavanoz.utils import InterceptHandler
 from loguru import logger
 import logging
@@ -12,14 +13,25 @@ import sys
 from halo import Halo
 
 
+logger.disable("androguard")
+
 class Kavanoz:
-    def __init__(self, apk_path=None, apk_object=None, output_dir=None):
+    def __init__(
+        self,
+        apk_path: str | None = None,
+        apk_object=None,
+        output_dir: str | None = None,
+    ):
         self.output_dir = output_dir
+        mod_logger = logging.getLogger("androidemu")
+        mod_logger.handlers = [InterceptHandler(level=logging.CRITICAL)]
+        mod_logger.propagate = False
         s = time.time()
         if apk_object:
             self.apk_object = apk_object
-        else:
+        elif apk_path:
             self.apk_object = APK(apk_path)
+
         # load plugins
         self.plugins = [
             subplug
@@ -29,13 +41,13 @@ class Kavanoz:
         e = time.time()
         logger.info(f"Androguard took : {e-s} seconds")
         s = time.time()
-        self.dvms = [DEX(dex) for dex in self.apk_object.get_all_dex()]
+        self.dexes = [DEX(dex) for dex in self.apk_object.get_all_dex()]
         e = time.time()
         logger.info(f"Androguard dvm took : {e-s} seconds")
 
     def get_plugin_results(self):
         for plugin in self.plugins:
-            p = plugin(self.apk_object, self.dvms, output_dir=self.output_dir)
+            p = plugin(self.apk_object, self.dexes, output_dir=self.output_dir)
             yield p.main()
 
     def is_packed(self):
@@ -43,7 +55,7 @@ class Kavanoz:
             "test",
             "test",
             apk_object=self.apk_object,
-            dvms=self.dvms,
+            dexes=self.dexes,
             output_dir=self.output_dir,
         )
         return p.is_packed()
@@ -60,14 +72,15 @@ class Kavanoz:
 )
 @click.option("-v", "--verbose", count=True)
 def cli(filename, output_dir, verbose):
-    logging.basicConfig(handlers=[InterceptHandler()], level=0, force=True)
-    logger.disable("androguard")
     logger.remove()
     if verbose > 0:
-        logger.add(sys.stderr, level=verbose)
-    spinner = Halo(text="Extracting apk/dvm information", spinner="star")
+        if verbose > 3:
+            verbose = 3
+        logger.add(sys.stderr, level=40-verbose*10)
+    spinner = Halo(text="Extracting apk/dex information", spinner="star")
     spinner.start()
     k = Kavanoz(filename, output_dir=output_dir)
+    logger.warning("This is a warning")
     spinner.stop()
     spinner.start()
     if not k.is_packed():
