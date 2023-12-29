@@ -72,6 +72,8 @@ class Unpacker:
         self.logger.info(f"Packed : Score : {score}")
         if score > 0.80:
             ispacked = True
+        elif score == 0.0:
+            ispacked = False
         else:
             # Lets check if MainActivity is present
             res = self.apk_object.get_main_activity()
@@ -83,6 +85,7 @@ class Unpacker:
                         continue
                     clas_name = "L" + res.replace(".", "/") + ";"
                     if clas_name in dex_classes:
+                        print("MainActivity found")
                         break
                 else:
                     ispacked = True
