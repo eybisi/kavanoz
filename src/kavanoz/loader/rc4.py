@@ -127,7 +127,7 @@ class LoaderRc4(Unpacker):
                 )
                 static_rc4_string = field.get_init_value().get_value()
                 r = set()
-                r.add(static_rc4_string)
+                r.add(static_rc4_string.encode())
                 return r
             else:
                 if (
