@@ -39,6 +39,25 @@ zlib_headers = [
 ]
 
 
+class MyFilter:
+    def __init__(self, level):
+        self.level = level
+
+    def __call__(self, record):
+        levelno = logger.level(self.level).no
+        return record["level"].no >= levelno
+
+
+def set_log(level):
+    """
+    Sets the log for loguru based on the level being passed.
+    The possible values are TRACE, DEBUG, INFO, SUCCESS, WARNING, ERROR, CRITICAL
+    """
+    logger.remove(0)
+    my_filter = MyFilter(level)
+    logger.add(sys.stderr, filter=my_filter, level=0)
+
+
 def unescape_unicode(str):
     codepoint = re.compile(r"(\\u[0-9a-fA-F]{4})")
 
