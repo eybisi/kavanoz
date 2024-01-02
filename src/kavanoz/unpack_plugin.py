@@ -85,7 +85,6 @@ class Unpacker:
                         continue
                     clas_name = "L" + res.replace(".", "/") + ";"
                     if clas_name in dex_classes:
-                        print("MainActivity found")
                         break
                 else:
                     ispacked = True
