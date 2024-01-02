@@ -92,7 +92,7 @@ def cli(filename, output_dir, verbose):
 Plugin description : {res['name']} 
 Output file : {res['output_file']} """
             spinner.text_color = "green"
-            spinner.stop_and_persist("✨", "Unpacked succesfully!")
+            spinner.stop_and_persist("✨", "Unpacked successfully!")
             print(m)
             break
     else:

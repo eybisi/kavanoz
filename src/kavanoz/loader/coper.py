@@ -55,7 +55,7 @@ class LoaderCoper(Unpacker):
                 return
         self.logger.info(f"Androidemu extracted rc4 key: {self.resolved_strings[0]}")
         if self.decrypt_files(self.resolved_strings[0]):
-            self.logger.info("Decryption successfull")
+            self.logger.info("Decryption successful")
         os.remove(fname)
 
     def decrypt_files(self, rc4key: str):

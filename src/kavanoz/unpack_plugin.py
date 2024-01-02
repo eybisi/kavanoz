@@ -248,13 +248,13 @@ class Unpacker:
                 self.output_dir, self.calculate_name(dec)
             )
             self.logger.success(
-                f"Decryption succesfull! Output dex : {self.decrypted_payload_path}"
+                f"Decryption successful! Output dex : {self.decrypted_payload_path}"
             )
             with open(self.decrypted_payload_path, "wb") as fp:
                 fp.write(dec)
             return True
         elif dec[:4] in pkzip_headers:
-            self.logger.success(f"Decryption succesfull!\t Found zip file")
+            self.logger.success(f"Decryption successful!\t Found zip file")
             with zipfile.ZipFile(io.BytesIO(dec), "r") as drop:
                 for file in drop.filelist:
                     with drop.open(file.filename) as f:
@@ -281,7 +281,7 @@ class Unpacker:
                 self.decrypted_payload_path = os.path.join(
                     self.output_dir, self.calculate_name(decrypted)
                 )
-                self.logger.success(f"Decryption succesfull!\t Found zlib file")
+                self.logger.success(f"Decryption successful!\t Found zlib file")
                 with open(self.decrypted_payload_path, "wb") as fp:
                     fp.write(decrypted)
                 return True

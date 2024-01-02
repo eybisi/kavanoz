@@ -64,7 +64,7 @@ Add following function to make early exit from plugin.
 def lazy_check(self,apk_object:APK, dexes: "list[DEX]"):
 ```
 
-If extraction is succesful assign self.decrypted_payload_path with extracted file path.
+If extraction is successful assign self.decrypted_payload_path with extracted file path.
 You can use helper functions from unpacker class:
 - get_array_data
 - get_smali
