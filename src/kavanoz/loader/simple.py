@@ -33,7 +33,21 @@ class LoaderSimple(Unpacker):
             if not self.check_header(xored_data):
                 continue
             self.logger.info(f"Found single byte xor key : {k}")
-            xored_data = xor(file_data, k.to_bytes(1, "little"))
+            if self.check_obfuse():
+                xored_data = xor(file_data[:100], k.to_bytes(1, "little"))
+                xored_data += file_data[100:]
+            else:
+                xored_data = xor(file_data, k.to_bytes(1, "little"))
             if self.check_and_write_file(xored_data):
                 return True
+        return False
+
+    def check_obfuse(self) -> bool:
+        # Check if obfuse.NPStringFog class exists
+        # If so, xor only first 100 bytes of the file
+        res = self.find_class_in_dvms("Lobfuse/NPStringFog;")
+        if res:
+            self.logger.info("Found obfuse.NPStringFog class")
+            return True
+        self.logger.info("obfuse.NPStringFog class not found")
         return False
