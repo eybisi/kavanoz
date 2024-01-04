@@ -5,6 +5,7 @@ import sys
 import re
 from typing import cast
 
+
 def xor(var: bytes, key: bytes) -> bytes:
     return bytes(a ^ b for a, b in zip(var, cycle(key)))
 
@@ -69,21 +70,21 @@ def unescape_unicode(str):
 
 class InterceptHandler(logging.Handler):
     # def emit(self, record):
-        # # Get corresponding Loguru level if it exists.
-        # try:
-            # level = logger.level(record.levelname).name
-        # except ValueError:
-            # level = record.levelno
+    # # Get corresponding Loguru level if it exists.
+    # try:
+    # level = logger.level(record.levelname).name
+    # except ValueError:
+    # level = record.levelno
 
-        # # Find caller from where originated the logged message.
-        # frame, depth = sys._getframe(6), 6
-        # while frame and frame.f_code.co_filename == logging.__file__:
-            # frame = frame.f_back
-            # depth += 1
+    # # Find caller from where originated the logged message.
+    # frame, depth = sys._getframe(6), 6
+    # while frame and frame.f_code.co_filename == logging.__file__:
+    # frame = frame.f_back
+    # depth += 1
 
-        # logger.opt(depth=depth, exception=record.exc_info).log(
-            # level, record.getMessage()
-        # )
+    # logger.opt(depth=depth, exception=record.exc_info).log(
+    # level, record.getMessage()
+    # )
     def emit(self, record: logging.LogRecord) -> None:
         try:
             level = logger.level(record.levelname).name
@@ -98,9 +99,9 @@ class InterceptHandler(logging.Handler):
         try:
             logger_with_opts.log(level, "{}", record.getMessage())
         except Exception as e:
-            safe_msg = getattr(record, 'msg', None) or str(record)
+            safe_msg = getattr(record, "msg", None) or str(record)
             logger_with_opts.warning(
                 "Exception logging the following native logger message: {}, {!r}",
                 safe_msg,
-                e
+                e,
             )

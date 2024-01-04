@@ -108,12 +108,14 @@ class LoaderRc4(Unpacker):
     def find_rc4_keys_from_static_methods(self, klass) -> set:
         all_possible_rc4_keys = set()
         for method in klass.get_methods():
-            if "static" in method.get_access_flags_string() and "Ljava/lang/String;" in method.get_descriptor():
+            if (
+                "static" in method.get_access_flags_string()
+                and "Ljava/lang/String;" in method.get_descriptor()
+            ):
                 res = self.generate_rc4_keys_from_method(method)
                 if len(res) > 0:
                     all_possible_rc4_keys.update(res)
         return all_possible_rc4_keys
-
 
     def find_rc4_keys_from_klass_fields(self, klass) -> set:
         all_possible_rc4_keys = set()
