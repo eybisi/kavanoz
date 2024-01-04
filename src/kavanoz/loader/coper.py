@@ -1,4 +1,6 @@
 import sys
+from androguard.core.apk import APK
+from androguard.core.dex import DEX
 from androidemu.emulator import Emulator
 from androidemu.utils.memory_helpers import read_utf8
 from unicorn.unicorn_const import UC_HOOK_MEM_READ_UNMAPPED, UC_HOOK_MEM_UNMAPPED
@@ -19,6 +21,21 @@ class LoaderCoper(Unpacker):
             "loader.coper", "Unpacker for coper", apk_obj, dvms, output_dir
         )
 
+    def lazy_check(self, apk_object: APK, dvms: list[DEX]) -> bool:
+        arm32_native_libs = [
+            filename
+            for filename in self.apk_object.get_files()
+            if filename.startswith("lib/armeabi-v7a")
+        ]
+        if len(arm32_native_libs) >= 5:
+            self.logger.info(
+                "Found more than 5 native libs, this is probably NOT a coper"
+            )
+            return False
+        else:
+            self.logger.info("Found less than 5 native libs, this is probably a coper")
+            return True
+
     def start_decrypt(self, native_lib: str = ""):
         arm32_native_libs = [
             filename
@@ -31,9 +48,15 @@ class LoaderCoper(Unpacker):
         if len(arm32_native_libs) != 1:
             self.logger.info("Not sure this is copper but continue anyway")
 
-        fname = arm32_native_libs[0].split("/")[-1]
+        for arm32_lib in arm32_native_libs:
+            self.logger.info(f"Trying to decrypt with {arm32_lib}")
+            if self.decrypt_library(arm32_lib):
+                return
+
+    def decrypt_library(self, native_lib: str) -> bool:
+        fname = native_lib.split("/")[-1]
         with open(fname, "wb") as fp:
-            fp.write(self.apk_object.get_file(arm32_native_libs[0]))
+            fp.write(self.apk_object.get_file(native_lib))
         self.target_lib = fname
         # Show loaded modules.
         self.resolved_strings = []
@@ -56,7 +79,8 @@ class LoaderCoper(Unpacker):
         self.logger.info(f"Androidemu extracted rc4 key: {self.resolved_strings[0]}")
         if self.decrypt_files(self.resolved_strings[0]):
             self.logger.info("Decryption successful")
-        os.remove(fname)
+            return True
+        return False
 
     def decrypt_files(self, rc4key: str):
         for filepath in self.apk_object.get_files():
@@ -101,7 +125,7 @@ class LoaderCoper(Unpacker):
         self.logger.debug("Trying to read from address : %x" % address)
         sp = uc.reg_read(UC_ARM_REG_SP)
         bp = uc.reg_read(UC_ARM_REG_R11)
-        self.logger.debug(f"Stack pointer: {hex(sp)} \n Base pointer: {hex(bp)}")
+        self.logger.debug(f"Stack pointer: {hex(sp)}, Base pointer: {hex(bp)}")
 
         # Problem here is we don't know the size of the stack data
         # If we read too much we will get unmapped memory error
