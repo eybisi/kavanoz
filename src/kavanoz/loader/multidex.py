@@ -53,8 +53,8 @@ class LoaderMultidex(Unpacker):
                     return
 
         self.decrypted_payload_path = None
-        zip_function = self.find_zip_function()
-        if zip_function is not None:
+        zip_functions = self.find_zip_function()
+        for zip_function in zip_functions:
             _function, dvm = zip_function
             variable = self.extract_variable_from_zip(_function, dvm)
             if variable is not None:
@@ -281,6 +281,7 @@ class LoaderMultidex(Unpacker):
         return None
 
     def find_zip_function(self):
+        target_methods = []
         target_method = None
         for d in self.dexes:
             for c in d.get_classes():
@@ -291,8 +292,8 @@ class LoaderMultidex(Unpacker):
                     ):
                         self.logger.info("Found method")
                         target_method = m
-                        return target_method, d
-        return None
+                        target_methods.append((target_method,d))
+        return target_methods
 
     def find_input_output_stream(self):
         target_method = None
@@ -302,7 +303,7 @@ class LoaderMultidex(Unpacker):
                 for m in c.get_methods():
                     if (
                         m.get_descriptor()
-                        == "(Ljava/io/InputStream; Ljava/io/OutputStream;)V"
+                        == "(Ljava/io/InputStream; Ljava/io/OutputStream;)V" or m.get_descriptor() == "(Ljava/lang/String; Ljava/io/InputStream; Ljava/io/OutputStream;)V"
                     ):
                         if m.access_flags & 0x2 == 0x2:
                             self.logger.info("Found method with private access")
@@ -417,7 +418,7 @@ class LoaderMultidex(Unpacker):
         )
         if len(match) == 0:
             self.logger.info(
-                f"Unable to extract variable from {target_method.get_name()}"
+                f"Unable to extract variable from {target_method}"
             )
             self.logger.info("Exiting ...")
             return None
