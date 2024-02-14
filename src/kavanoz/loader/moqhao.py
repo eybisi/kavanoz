@@ -28,6 +28,11 @@ class LoaderMoqhao(Unpacker):
                     self.logger.info(
                         f"Decryption finished! {self.decrypted_payload_path}"
                     )
+                else:
+                    if self.solve_encryption_native(f):
+                        self.logger.info(
+                            f"Decryption finished! {self.decrypted_payload_path}"
+                        )
 
     def lazy_check(self, apk_obj, dvms) -> bool:
         file_list = apk_obj.get_files()
@@ -45,4 +50,14 @@ class LoaderMoqhao(Unpacker):
             return True
         else:
             return False
-        return False
+
+    def solve_encryption_native(self, file_data):
+        if len(file_data) < 24:
+            return
+        first_12 = file_data[:24]
+        xor_key = first_12[16].to_bytes(1, "little")
+        xord_data = xor(file_data[24:], xor_key)
+        if self.check_and_write_file(xord_data):
+            return True
+        else:
+            return False
