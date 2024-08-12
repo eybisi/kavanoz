@@ -5,4 +5,4 @@ arc4==0.3.0
 halo==0.0.31
 lief==0.12.3
 loguru>=0.7.2
-pycryptodome==3.16.0
+pycryptodome==3.19.1
