@@ -11,7 +11,6 @@ logger.remove()
 
 
 from kavanoz.loader.multidex import LoaderMultidex
-from kavanoz.loader.old_rc4 import LoaderOldRc4
 from kavanoz.loader.rc4 import LoaderRc4
 from kavanoz.loader.subapp import LoaderSubapp
 from kavanoz.loader.moqhao import LoaderMoqhao
@@ -22,8 +21,6 @@ from kavanoz.loader.simple_xor import LoaderSimpleXor
 from kavanoz.loader.simply_xor2 import LoaderSimpleXor2
 from kavanoz.loader.simple_xor_zlib import LoaderSimpleXorZlib
 from kavanoz.loader.simple_aes import LoaderSimpleAes
-from kavanoz.loader.appsealing import LoaderAppsealing
-from kavanoz.loader.simple import LoaderSimple
 from kavanoz.loader.pronlocker import LoaderPr0nLocker
 from androguard.core.apk import APK
 from kavanoz.loader.kangapack import LoaderKangaPack
@@ -159,6 +156,38 @@ class TestAllLoaders(unittest.TestCase):
         Test that it can sum a list of integers
         """
         filename = os.path.join(os.path.dirname(__file__), "./test_apk/coper.apk")
+        apk_object = APK(filename)
+        dvms = [DEX(dex) for dex in apk_object.get_all_dex()]
+        coper = LoaderCoper(apk_object, dvms, output_dir=None)
+        res = coper.main()
+        assert res["status"] == "success"
+        if coper.decrypted_payload_path:
+            os.remove(coper.decrypted_payload_path)
+
+    def test_coper2(self):
+        """
+        Test that it can sum a list of integers
+        """
+        filename = os.path.join(os.path.dirname(__file__), "./test_apk/coper2_0.apk")
+        apk_object = APK(filename)
+        dvms = [DEX(dex) for dex in apk_object.get_all_dex()]
+        coper = LoaderCoper(apk_object, dvms, output_dir=None)
+        res = coper.main()
+        assert res["status"] == "success"
+        if coper.decrypted_payload_path:
+            os.remove(coper.decrypted_payload_path)
+
+        filename = os.path.join(os.path.dirname(__file__), "./test_apk/coper2_1.apk")
+        apk_object = APK(filename)
+        dvms = [DEX(dex) for dex in apk_object.get_all_dex()]
+        coper = LoaderCoper(apk_object, dvms, output_dir=None)
+        res = coper.main()
+        assert res["status"] == "success"
+        if coper.decrypted_payload_path:
+            os.remove(coper.decrypted_payload_path)
+
+
+        filename = os.path.join(os.path.dirname(__file__), "./test_apk/coper3_2.apk")
         apk_object = APK(filename)
         dvms = [DEX(dex) for dex in apk_object.get_all_dex()]
         coper = LoaderCoper(apk_object, dvms, output_dir=None)
