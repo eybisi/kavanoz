@@ -1,10 +1,9 @@
-import sys
 from androguard.core.apk import APK
+from androguard.core.axml import ARSCParser, ARSCResType
 from androguard.core.dex import DEX
 from androidemu.emulator import Emulator
 from androidemu.utils.memory_helpers import read_utf8
 from unicorn.unicorn_const import UC_HOOK_MEM_READ_UNMAPPED, UC_HOOK_MEM_UNMAPPED
-import kavanoz.debug_utils
 
 from unicorn import UC_HOOK_CODE
 import unicorn
@@ -81,6 +80,45 @@ class LoaderCoper(Unpacker):
             self.logger.info("Decryption successful")
             os.remove(self.target_lib)
             return True
+        else:
+            # Now this can be because dex\n035 is added after decryption of thhe file. We can also get file name from resolved strings.
+            if len(self.resolved_strings) == 2 and self.apk_object.get_package() in self.resolved_strings[1]:
+                # This is tricky part. Sometimes :raw points to different point from resources.arsc/raw..
+                # But instead we can search .../raw/filename in all files
+                enc_filename = self.resolved_strings[1].split(":")[1]
+                self.logger.debug(f"Looking for file : {enc_filename}")
+                for f in self.apk_object.get_files():
+                    if enc_filename in f:
+                        if self.decrypt_file(self.resolved_strings[0],f):
+                            os.remove(self.target_lib)
+                            return True
+                    else:
+                        # Here we go...
+                        # I dont know this is obfuscation or something else with androguard library
+                        # We need to manually find mapping of res/somefile with raw/targetfile by parsing resources.arsc
+                        arsc_file = self.apk_object.get_file("resources.arsc")
+                        arsc_parser = ARSCParser(arsc_file)
+                        # Find item <ARSCResType(start=0x3e0, id=0x2, flags=0x0, entryCount=2, entriesStart=0x5c, mResId=0x7f020000, table:raw)>
+                        # then next item will be rids of raw files [(0, 2130837504), (16, 2130837505)]
+                        items = arsc_parser.get_items(package_name=self.apk_object.get_package())
+                        for i in range(len(items)):
+                            if type(items[i]) ==  ARSCResType:
+                                # Found res type
+                                if items[i].get_type() == "raw":
+                                    # Found raw type
+                                    # items[i+1] hold list of resource ids of raw type files
+                                    rids = [x[1] for x in items[i+1]]
+                                    self.logger.debug(f"Found rids : {rids}")
+                                    for rid in rids:
+                                        curr_res_config = arsc_parser.get_resolved_res_configs(rid=rid)
+                                        xml_name = arsc_parser.get_resource_xml_name(r_id=rid)
+                                        if enc_filename in xml_name and len(curr_res_config) > 0:
+                                            curr_res_file_name = curr_res_config[0][1]
+                                            if self.decrypt_file(self.resolved_strings[0],curr_res_file_name):
+                                                os.remove(self.target_lib)
+                                                return True
+
+                        return False
         os.remove(self.target_lib)
         return False
 
@@ -92,6 +130,16 @@ class LoaderCoper(Unpacker):
             if self.check_and_write_file(dec):
                 return True
         return False
+
+    def decrypt_file(self,rc4key:str, filename:str):
+        fd = self.apk_object.get_file(filename)
+        arc4 = ARC4(rc4key.encode("utf-8"))
+        dec = arc4.decrypt(fd)
+        dec = b"dex\n035" + dec
+        if self.check_and_write_file(dec):
+            return True
+        return False
+
 
     def init_lib(self):
         target_ELF = lief.ELF.parse(self.target_lib)
@@ -164,6 +212,22 @@ class LoaderCoper(Unpacker):
                 strncat = module.find_symbol("__strncat_chk")
                 if strncat == None:
                     self.logger.info("No strncat symbol 😔")
+
+                    self.logger.info("maybe octo2 ?")
+                    unpack_dynlib = module.find_symbol("_ZN8WrpClass13unpack_dynlibEv")
+                    if unpack_dynlib == None:
+                        self.logger.info("No unpack_dynlib symbol 😔")
+                        return False
+                    self.logger.debug(f"{hex(unpack_dynlib.address)} unpack_dynlib addr")
+                    replace_loader = module.find_symbol("_ZN8WrpClass14replace_loaderEb")
+
+                    self.emulator.mu.hook_add(
+                        UC_HOOK_CODE,
+                        self.hook_unpack_dynlib,
+                        begin=unpack_dynlib.address,
+                        end=unpack_dynlib.address + 1,
+                        user_data=replace_loader.address,
+                    )
                     return False
                 self.logger.debug(f"{hex(strncat.address)} strcat_chk addr")
                 self.emulator.mu.hook_add(
@@ -200,6 +264,58 @@ class LoaderCoper(Unpacker):
             self.resolved_strings.append(final_str)
             if len(self.resolved_strings) > 10:
                 self.emulator.mu.emu_stop()
+
+    def hook_unpack_dynlib(self, uc: unicorn.unicorn.Uc, address, size, user_data):
+
+        self.logger.debug("unpack_dynlib triggered : %x" % address)
+        sp = uc.reg_read(UC_ARM_REG_SP)
+        self.logger.debug(f"Stack pointer: {hex(sp)}")
+        # Problem here is we don't know the size of the stack data, we can go back calle function
+        # and read prologue to extract stack size
+
+        # Get stack size from replace_loader
+
+        should_be_subw = uc.mem_read(
+            user_data - 1 + 8, 0x4
+        )
+        if should_be_subw[1] != 0xb0:
+            self.logger.debug("Bad instruction to find stack size")
+            return 0
+        # a6b0 -> read 0xa6 &= 0x7f
+        stack_size = (should_be_subw[0] & 0x7f ) << 2
+
+        self.logger.debug(f"Found stack size at replace_loader : {stack_size}")
+        stack_data = uc.mem_read(sp, stack_size+12)
+        # Stack data contains list of strings ends with \x00 but there are also
+        # filler \x00 bytes in between them. We need to split them.
+        stack_data = stack_data.split(b"\x00")
+        # Filter out empty strings
+        stack_data = [x for x in stack_data if x != b""]
+        # Decode strings
+        stack_data = [x for x in stack_data]
+        self.logger.debug(f"Stack data: {stack_data}")
+        # Some sanity checks
+        if len(stack_data) > 5:
+            # example stack strings:
+            # - Q3DCe5ZIFftphISZwNpNYy4vA1Qvyyjt
+            # - replace_loader
+            # - 7a1bc825b313fd55
+            # - b313fd551c1f219b
+            # - com.handedfastee5
+            # - com.handedfastee5:raw/kyndwjzbyg0
+            # get rc4 key
+            self.resolved_strings.append(stack_data[-1].decode("utf-8"))
+            # walk backward and find raw file
+            stack_data.reverse()
+            for i in range(0,len(stack_data),2):
+                if stack_data[i] in stack_data[i+1]:
+                    # we found the file
+                    self.logger.debug(f"RC4 encrypted file name : {stack_data[i+1].decode("utf-8")}")
+                    self.resolved_strings.append(stack_data[i+1].decode("utf-8"))
+                    break
+
+
+            self.emulator.mu.emu_stop()
 
     def extract_stack_size_from_function_prologue(
         self, uc, target_function, target_lib_base
