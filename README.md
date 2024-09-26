@@ -15,14 +15,23 @@ Ever wanted to get payload from packed malware without running android emulator 
 pip install kavanoz
 ```
 
+To install from source, clone the repository and do an editable install with -e. Which means if you edit or add new plugins to the project it will be used without reinstalling.
+
+```
+git clone https://github.com/eybisi/kavanoz.git
+cd kavanoz
+pip install -e .
+```
+
 ### :zap: Usage
 
 from cmdline
 ```bash
 kavanoz /tmp/filepath
 ```
+You can use `-vvv` parameter to print verbose logs. (useful for debugging plugins)
 
-from python library
+as python library
 ```py
 from kavanoz.core import Kavanoz
 from kavanoz import utils
@@ -54,7 +63,7 @@ for plugin_result in k.get_plugin_results():
 
 ### :gear: Development
 
-To add new plugins just create new file in loader folder. Extend Unpacker class from unpack_plugin.py file. Define start_decrypt function with your implementation. 
+Make sure to install kavanoz as editable (with -e). To add new plugins just create new file in loader folder. Extend Unpacker class from unpack_plugin.py file. Define start_decrypt function with your implementation. 
 ```py
 def start_decrypt(self, apk_object: APK, dexes: "list[DEX]"):
 ```
