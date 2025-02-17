@@ -54,6 +54,7 @@ class LoaderKangaPack(Unpacker):
                 rel = elf_bin.get_relocation(sym.value)
                 # get lots of bytes then split by null byte :(
                 str_arr = elf_bin.get_content_from_virtual_address(rel.addend, 40)
+                str_arr = str_arr.tolist()
                 an = str_arr[: str_arr.index(0)]
                 secret_key = "".join(chr(x) for x in an).encode()
                 iv = secret_key

@@ -1,8 +1,8 @@
 androguard>=4.0.1
 apkInspector>=1.2.1
-androidemu==0.0.2
-arc4==0.3.0
-halo==0.0.31
-lief==0.15.1
+androidemu>=0.0.4
+arc4>=0.3.0
+halo>=0.0.31
+lief>=0.16.3
 loguru>=0.7.2
-pycryptodome==3.19.1
+pycryptodome>=3.19.1

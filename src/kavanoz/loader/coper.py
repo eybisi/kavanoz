@@ -66,7 +66,7 @@ class LoaderCoper(Unpacker):
             self.logger.info("Failed to setup hooks maybe no srtcat symbol ?")
             self.logger.info("Trying to find strings in stack")
         # self.emulator.mu.hook_add(UC_HOOK_CODE, self.hook_debug_print)
-        self.emulator.mu.hook_add(UC_HOOK_MEM_READ_UNMAPPED, self.hook_unmapped_read)
+        self.emulator.uc.hook_add(UC_HOOK_MEM_READ_UNMAPPED, self.hook_unmapped_read)
 
         try:
             self.emulator.call_symbol(self.target_module, self.target_function.name)
@@ -182,7 +182,7 @@ class LoaderCoper(Unpacker):
         # But we can extract stack size from function prologue
 
         stack_size = self.extract_stack_size_from_function_prologue(
-            self.emulator.mu, self.target_function, self.target_lib_base
+            self.emulator.uc, self.target_function, self.target_lib_base
         )
         if stack_size == 0:
             return
@@ -221,7 +221,7 @@ class LoaderCoper(Unpacker):
                     self.logger.debug(f"{hex(unpack_dynlib.address)} unpack_dynlib addr")
                     replace_loader = module.find_symbol("_ZN8WrpClass14replace_loaderEb")
 
-                    self.emulator.mu.hook_add(
+                    self.emulator.uc.hook_add(
                         UC_HOOK_CODE,
                         self.hook_unpack_dynlib,
                         begin=unpack_dynlib.address,
@@ -230,14 +230,14 @@ class LoaderCoper(Unpacker):
                     )
                     return False
                 self.logger.debug(f"{hex(strncat.address)} strcat_chk addr")
-                self.emulator.mu.hook_add(
+                self.emulator.uc.hook_add(
                     UC_HOOK_CODE,
                     self.hook_strncat,
                     begin=strncat.address,
                     end=strncat.address + 1,
                 )
-                self.emulator.mu.hook_add(UC_HOOK_MEM_UNMAPPED, self.hook_mem_read)
-                self.emulator.mu.hook_add(UC_HOOK_MEM_READ_UNMAPPED, self.hook_mem_read)
+                self.emulator.uc.hook_add(UC_HOOK_MEM_UNMAPPED, self.hook_mem_read)
+                self.emulator.uc.hook_add(UC_HOOK_MEM_READ_UNMAPPED, self.hook_mem_read)
                 return True
         return False
 
@@ -263,7 +263,7 @@ class LoaderCoper(Unpacker):
             self.logger.debug(f"current strncat hook final_str : {final_str}")
             self.resolved_strings.append(final_str)
             if len(self.resolved_strings) > 10:
-                self.emulator.mu.emu_stop()
+                self.emulator.uc.emu_stop()
 
     def hook_unpack_dynlib(self, uc: unicorn.unicorn.Uc, address, size, user_data):
 
@@ -315,7 +315,7 @@ class LoaderCoper(Unpacker):
                     break
 
 
-            self.emulator.mu.emu_stop()
+            self.emulator.uc.emu_stop()
 
     def extract_stack_size_from_function_prologue(
         self, uc, target_function, target_lib_base
