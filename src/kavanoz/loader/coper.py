@@ -310,7 +310,7 @@ class LoaderCoper(Unpacker):
             for i in range(0,len(stack_data),2):
                 if stack_data[i] in stack_data[i+1]:
                     # we found the file
-                    self.logger.debug(f"RC4 encrypted file name : {stack_data[i+1].decode("utf-8")}")
+                    self.logger.debug(f'RC4 encrypted file name : {stack_data[i+1].decode("utf-8")}')
                     self.resolved_strings.append(stack_data[i+1].decode("utf-8"))
                     break
 
