@@ -22,6 +22,7 @@ from kavanoz.loader.simply_xor2 import LoaderSimpleXor2
 from kavanoz.loader.simple_xor_zlib import LoaderSimpleXorZlib
 from kavanoz.loader.simple_aes import LoaderSimpleAes
 from kavanoz.loader.pronlocker import LoaderPr0nLocker
+from kavanoz.loader.crocodile import LoaderCrocodile
 from androguard.core.apk import APK
 from kavanoz.loader.kangapack import LoaderKangaPack
 from androguard.core.dex import DEX
@@ -311,6 +312,19 @@ class TestAllLoaders(unittest.TestCase):
         apk_object = APK(filename)
         dvms = [DEX(dex) for dex in apk_object.get_all_dex()]
         spron = LoaderPr0nLocker(apk_object, dvms, output_dir=None)
+        res = spron.main()
+        assert res["status"] == "success"
+        if spron.decrypted_payload_path:
+            os.remove(spron.decrypted_payload_path)
+
+    def test_crocodile(self):
+        """
+        Test crocodile loader
+        """
+        filename = os.path.join(os.path.dirname(__file__), "./test_apk/crocodile.apk")
+        apk_object = APK(filename)
+        dvms = [DEX(dex) for dex in apk_object.get_all_dex()]
+        spron = LoaderCrocodile(apk_object, dvms, output_dir=None)
         res = spron.main()
         assert res["status"] == "success"
         if spron.decrypted_payload_path:

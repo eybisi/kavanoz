@@ -9,6 +9,14 @@ from typing import cast
 def xor(var: bytes, key: bytes) -> bytes:
     return bytes(a ^ b for a, b in zip(var, cycle(key)))
 
+def unpad_pkcs5(data: bytes) -> bytes:
+    """
+    Unpads the data using the PKCS5 padding scheme.
+    """
+    pad_len = data[-1]
+    if pad_len > 16:
+        raise ValueError("Invalid padding length")
+    return data[:-pad_len]
 
 dex_headers = [
     b"dex\n035\x00",
