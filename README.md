@@ -80,6 +80,8 @@ You can use helper functions from unpacker class:
 - find_method(class_name,method_name,descriptor="")
 - check_and_write_file(file_data) : checks file has dex, zip and zlib headers and writes unpacked dex with name : "external-{m[:8]}.dex"
 
+Make sure to run `python -m unittest` before opening a PR. In order to get test apk files, use `git lfs pull` command.
+
 ### :book: Tips
 
 - self.dexes hold dex objects. You can get class with `dex.get_class(smali_annotation_of_class)`.
