@@ -5,18 +5,18 @@ from kavanoz.unpack_plugin import Unpacker
 from kavanoz.utils import unpad_pkcs5
 
 
-class LoaderCrocodile(Unpacker):
+class LoaderCrocodilus(Unpacker):
     """
     Read asset files. Try to decrypt with AES; key [32:48] iv [48:64], size [64:72], data [72:]
     """
 
     def __init__(self, apk_obj: APK, dvms, output_dir):
         super().__init__(
-            "loader.crocodile", "Unpacker for crocodile", apk_obj, dvms, output_dir
+            "loader.Crocodilus", "Unpacker for crocodilus", apk_obj, dvms, output_dir
         )
 
     def start_decrypt(self, native_lib: str = ""):
-        self.logger.info("Starting to decrypt for crocodile")
+        self.logger.info("Starting to decrypt for Crocodilus")
         self.decrypted_payload_path = None
         self.brute_assets()
 
